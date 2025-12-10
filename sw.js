@@ -1,4 +1,3 @@
-// Service Worker for Nexus PWA
 const CACHE_NAME = "nexus-cache-v1";
 const urlsToCache = [
   "/noomuri-nexus/",
@@ -11,7 +10,6 @@ const urlsToCache = [
   "/noomuri-nexus/icon-512.png"
 ];
 
-// Install event: cache files
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,11 +18,4 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Fetch event: serve cached files if available
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
-});
+self.addEventListener
