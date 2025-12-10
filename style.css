@@ -1,0 +1,158 @@
+/* Background animation */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(-45deg, #b71c1c, #212121, #d32f2f, #000000);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  color: #fff;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Login screen */
+.login-screen {
+  text-align: center;
+  padding-top: 20vh;
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.password-title {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+/* Password input + eye icon */
+.password-wrapper {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid #b71c1c;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+#passwordInput {
+  padding: 10px;
+  border: none;
+  outline: none;
+  width: 200px;
+}
+
+.eye-icon {
+  background: #444;
+  color: #fff;
+  padding: 0 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: 1.2em;
+}
+
+.eye-icon:hover {
+  background: #666;
+}
+
+button {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: #b71c1c;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #d32f2f;
+}
+
+/* Error message styling */
+.error-message {
+  color: #ff5252;
+  font-size: 0.9em;
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+/* Fade animations */
+.fade-out {
+  animation: fadeOut 0.8s forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Shake animation */
+.shake {
+  animation: shake 0.4s;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-8px); }
+  100% { transform: translateX(0); }
+}
+
+/* Spinner with fade-in/out */
+.spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 6px solid #212121;
+  border-top: 6px solid #b71c1c;
+  border-right: 6px solid #d32f2f;
+  border-bottom: 6px solid #000000;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  opacity: 0;
+  z-index: 999;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.fade-in {
+  animation: fadeIn 0.6s forwards;
+}
+
+.fade-out-spinner {
+  animation: fadeOutSpinner 0.6s forwards;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutSpinner {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

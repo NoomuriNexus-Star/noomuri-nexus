@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus</title>
+
+  <!-- Link to manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Theme color for title bar -->
+  <meta name="theme-color" content="#b71c1c">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Register service worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW registration failed:", err));
+    }
+  </script>
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <img src="icon-192.png" alt="Nexus Logo" class="logo">
+    <div class="password-title">Enter Password</div>
+    <div class="password-wrapper">
+      <input type="password" id="passwordInput" placeholder="Password">
+      <span id="togglePassword" class="eye-icon">👁️</span>
+    </div>
+    <button id="loginButton">Login</button>
+    <div id="errorMessage" class="error-message"></div>
+  </div>
+
+  <!-- App logic -->
+  <script src="app.js"></script>
+</body>
+</html>
