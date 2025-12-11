@@ -50,13 +50,6 @@
 
   <!-- Nexus Homepage -->
   <div id="nexusHome" class="hidden nexus-home">
-    <!-- Top search bar -->
-    <form id="topSearchForm" action="/api/search" method="GET" target="resultsFrame">
-      <input type="text" name="q" id="topSearchInput" class="google-search-input" placeholder="Search with Nexus...">
-      <span class="mic-icon" id="topMic">🎤</span>
-    </form>
-
-    <!-- Logo + main search -->
     <h1 class="nexus-logo">
       <span class="red1">N</span><span class="red2">E</span><span class="red3">X</span>
       <span class="red4">U</span><span class="red5">S</span>
@@ -124,7 +117,7 @@
       }
     });
 
-    // Speech recognition for microphone buttons
+    // Speech recognition for microphone
     function setupMic(micId, inputId) {
       const mic = document.getElementById(micId);
       const input = document.getElementById(inputId);
@@ -146,7 +139,6 @@
       });
     }
 
-    setupMic("topMic", "topSearchInput");
     setupMic("mainMic", "mainSearchInput");
   </script>
 </body>
