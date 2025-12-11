@@ -67,3 +67,4 @@ passwordInput.addEventListener("keypress", (event) => {
   }
 });
 
+
