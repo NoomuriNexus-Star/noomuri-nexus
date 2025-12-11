@@ -1,10 +1,11 @@
 {
-  "name": "Nexus",
+  "name": "Noomuri Nexus",
   "short_name": "Nexus",
-  "start_url": "/noomuri-nexus/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#b71c1c",
+  "description": "Privacy-first search experience",
   "icons": [
     {
       "src": "icon-192.png",
