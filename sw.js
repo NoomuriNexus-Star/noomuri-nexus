@@ -1,21 +1,21 @@
-const CACHE_NAME = "nexus-cache-v1";
-const urlsToCache = [
-  "/noomuri-nexus/",
-  "/noomuri-nexus/index.html",
-  "/noomuri-nexus/style.css",
-  "/noomuri-nexus/app.js",
-  "/noomuri-nexus/manifest.json",
-  "/noomuri-nexus/sw.js",
-  "/noomuri-nexus/icon-192.png",
-  "/noomuri-nexus/icon-512.png"
-];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
-    })
-  );
-});
-
-self.addEventListener
+{
+  "name": "Noomuri Nexus",
+  "short_name": "Nexus",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#b71c1c",
+  "description": "Privacy-first search experience",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
