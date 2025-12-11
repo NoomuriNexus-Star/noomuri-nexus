@@ -54,36 +54,24 @@ body {
 
 /* Login screen */
 .login-screen {
-  background: rgba(20, 20, 20, 0.9);
+  background: #000000;
   padding: 40px;
   border-radius: 12px;
   text-align: center;
   width: 320px;
   z-index: 10;
+  opacity: 0;
 }
 
-.logo {
-  width: 96px;
-  height: 96px;
-  margin-bottom: 20px;
+.login-screen.fade-in {
+  animation: fadeIn 1s forwards;
 }
 
 .app-title {
   font-size: 1.8rem;
   font-weight: bold;
   color: #b71c1c;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  font-size: 0.9rem;
-  color: #cccccc;
   margin-bottom: 20px;
-}
-
-.password-title {
-  font-size: 1rem;
-  margin-bottom: 10px;
 }
 
 .password-wrapper {
@@ -140,17 +128,30 @@ button:hover {
   min-height: 20px;
 }
 
-/* Nexus search UI */
-.nexus-search {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+/* Loading Nexus screen */
+.loading-nexus {
+  background: #000000;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.loading-nexus h2 {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+/* Nexus homepage */
+.nexus-home {
   background: #ffffff;
+  color: #000000;
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 5;
-  color: #000000;
+  min-height: 100vh;
 }
 
 /* Multishade red Nexus logo */
@@ -158,33 +159,38 @@ button:hover {
   font-size: 5rem;
   font-weight: bold;
   font-family: Arial, sans-serif;
-  text-align: center;
-  margin: 60px 0 30px 0;
-  letter-spacing: -2px;
+  margin: 40px 0 20px 0;
 }
 
-.nexus-logo .red1 { color: #b71c1c; }   /* deep red */
-.nexus-logo .red2 { color: #e53935; }   /* bright red */
-.nexus-logo .red3 { color: #ff1744; }   /* vivid red */
-.nexus-logo .red4 { color: #d32f2f; }   /* medium red */
-.nexus-logo .red5 { color: #c62828; }   /* dark red */
+.nexus-logo .red1 { color: #b71c1c; }
+.nexus-logo .red2 { color: #e53935; }
+.nexus-logo .red3 { color: #ff1744; }
+.nexus-logo .red4 { color: #d32f2f; }
+.nexus-logo .red5 { color: #c62828; }
 
 /* Google-style search input */
 .google-search-input {
   width: 60%;
   max-width: 600px;
-  padding: 12px 20px;
+  padding: 12px 40px 12px 20px;
   border: 1px solid #dcdcdc;
   border-radius: 24px;
   font-size: 1rem;
-  outline: none;
-  margin: 0 auto;
-  display: block;
+  margin: 10px auto;
   box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+  position: relative;
 }
 
 .google-search-input:focus {
   border-color: #b71c1c;
+}
+
+/* Microphone icon */
+.mic-icon {
+  position: relative;
+  left: -30px;
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 
 /* Buttons row */
@@ -209,6 +215,30 @@ button:hover {
   box-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
 
+/* Add shortcut + Customize Nexus */
+.shortcut-row {
+  margin-top: 20px;
+}
+
+.shortcut-button {
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.customize-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
 /* Results iframe */
 .results-frame {
   width: 100%;
@@ -226,9 +256,7 @@ button:hover {
   100% { transform: translateX(0); }
 }
 
-.shake {
-  animation: shake 0.5s;
-}
+.shake { animation: shake 0.5s; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
