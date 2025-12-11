@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus</title>
+  <title>NEXUS Search</title>
 
   <!-- Manifest for PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#b71c1c">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="icon-192.png">
 
   <!-- Styles -->
   <link rel="stylesheet" href="style.css">
@@ -46,12 +49,23 @@
 
   <!-- Nexus Search UI -->
   <div id="nexusSearch" class="hidden nexus-search">
-    <h2 class="app-title">Nexus Search</h2>
-    <form action="/api/search" method="GET" target="resultsFrame">
-      <input type="text" name="q" placeholder="Search Google..." class="search-input">
-      <button type="submit" class="search-button">Search</button>
-    </form>
-    <iframe name="resultsFrame" style="width:100%;height:100%;border:none;"></iframe>
+    <div class="google-style-container">
+      <h1 class="nexus-logo">
+        <span class="red1">N</span>
+        <span class="red2">E</span>
+        <span class="red3">X</span>
+        <span class="red4">U</span>
+        <span class="red5">S</span>
+      </h1>
+      <form id="searchForm" action="/api/search" method="GET" target="resultsFrame">
+        <input type="text" name="q" class="google-search-input" placeholder="Search with Nexus...">
+        <div class="button-row">
+          <button type="submit" class="google-button">Nexus Search</button>
+          <button type="submit" class="google-button">I'm Feeling Lucky</button>
+        </div>
+      </form>
+      <iframe name="resultsFrame" class="results-frame"></iframe>
+    </div>
   </div>
 
   <!-- App logic -->
