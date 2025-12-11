@@ -145,48 +145,76 @@ button:hover {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: #000000;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
+  align-items: center;
   z-index: 5;
+  color: #000000;
 }
 
-.nexus-search form {
-  display: flex;
-  padding: 10px;
-  background: #111111;
-}
-
-.search-input {
-  flex: 1;
-  padding: 10px;
-  border: 2px solid #b71c1c;
-  border-radius: 6px 0 0 6px;
-  background: #000000;
-  color: #ffffff;
-  font-size: 1rem;
-}
-
-.search-button {
-  padding: 10px 20px;
-  background: #b71c1c;
-  border: none;
-  border-radius: 0 6px 6px 0;
-  color: #ffffff;
-  font-size: 1rem;
+/* Multishade red Nexus logo */
+.nexus-logo {
+  font-size: 5rem;
   font-weight: bold;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 60px 0 30px 0;
+  letter-spacing: -2px;
+}
+
+.nexus-logo .red1 { color: #b71c1c; }   /* deep red */
+.nexus-logo .red2 { color: #e53935; }   /* bright red */
+.nexus-logo .red3 { color: #ff1744; }   /* vivid red */
+.nexus-logo .red4 { color: #d32f2f; }   /* medium red */
+.nexus-logo .red5 { color: #c62828; }   /* dark red */
+
+/* Google-style search input */
+.google-search-input {
+  width: 60%;
+  max-width: 600px;
+  padding: 12px 20px;
+  border: 1px solid #dcdcdc;
+  border-radius: 24px;
+  font-size: 1rem;
+  outline: none;
+  margin: 0 auto;
+  display: block;
+  box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+}
+
+.google-search-input:focus {
+  border-color: #b71c1c;
+}
+
+/* Buttons row */
+.button-row {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.google-button {
+  background: #f8f9fa;
+  border: 1px solid #f8f9fa;
+  border-radius: 4px;
+  color: #3c4043;
+  font-size: 0.9rem;
+  margin: 5px;
+  padding: 10px 20px;
   cursor: pointer;
 }
 
-.search-button:hover {
-  background: #e53935;
+.google-button:hover {
+  border: 1px solid #dadce0;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
 
-.nexus-search iframe {
-  flex: 1;
-  border: none;
+/* Results iframe */
+.results-frame {
   width: 100%;
-  height: calc(100% - 50px);
+  height: 70vh;
+  border: none;
+  margin-top: 30px;
 }
 
 /* Animations */
@@ -209,7 +237,7 @@ button:hover {
 
 @keyframes fadeOut {
   from { opacity: 1; }
-  to { opacity: 0; visibility: hidden; }
+  to { opacity: 0; }
 }
 
 @keyframes spin {
