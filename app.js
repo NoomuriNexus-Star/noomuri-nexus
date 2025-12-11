@@ -66,3 +66,4 @@ passwordInput.addEventListener("keypress", (event) => {
     loginButton.click();
   }
 });
+
