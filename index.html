@@ -33,52 +33,64 @@
 
   <!-- Login Screen -->
   <div id="loginScreen" class="login-screen hidden">
-    <img src="icon-192.png" alt="Nexus Logo" class="logo">
     <h1 class="app-title">Noomuri Nexus</h1>
-    <p class="subtitle">Privacy-first search experience</p>
-
-    <div class="password-title">Enter Password</div>
     <div class="password-wrapper">
       <input type="password" id="passwordInput" placeholder="Password">
       <span id="togglePassword" class="eye-icon">👁️</span>
     </div>
-
     <button id="loginButton">Login</button>
     <div id="errorMessage" class="error-message"></div>
   </div>
 
-  <!-- Nexus Search UI -->
-  <div id="nexusSearch" class="hidden nexus-search">
-    <div class="google-style-container">
-      <h1 class="nexus-logo">
-        <span class="red1">N</span>
-        <span class="red2">E</span>
-        <span class="red3">X</span>
-        <span class="red4">U</span>
-        <span class="red5">S</span>
-      </h1>
-      <form id="searchForm" action="/api/search" method="GET" target="resultsFrame">
-        <input type="text" name="q" class="google-search-input" placeholder="Search with Nexus...">
-        <div class="button-row">
-          <button type="submit" class="google-button">Nexus Search</button>
-          <button type="submit" class="google-button">I'm Feeling Lucky</button>
-        </div>
-      </form>
-      <iframe name="resultsFrame" class="results-frame"></iframe>
+  <!-- Loading Nexus Screen -->
+  <div id="loadingNexus" class="loading-nexus hidden">
+    <h2>Loading Nexus...</h2>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Nexus Homepage -->
+  <div id="nexusHome" class="hidden nexus-home">
+    <!-- Top search bar -->
+    <form id="topSearchForm" action="/api/search" method="GET" target="resultsFrame">
+      <input type="text" name="q" id="topSearchInput" class="google-search-input" placeholder="Search with Nexus...">
+      <span class="mic-icon" id="topMic">🎤</span>
+    </form>
+
+    <!-- Logo + main search -->
+    <h1 class="nexus-logo">
+      <span class="red1">N</span><span class="red2">E</span><span class="red3">X</span>
+      <span class="red4">U</span><span class="red5">S</span>
+    </h1>
+    <form id="mainSearchForm" action="/api/search" method="GET" target="resultsFrame">
+      <input type="text" name="q" id="mainSearchInput" class="google-search-input" placeholder="Search with Nexus...">
+      <span class="mic-icon" id="mainMic">🎤</span>
+      <div class="button-row">
+        <button type="submit" class="google-button">Nexus Search</button>
+      </div>
+    </form>
+
+    <!-- Add shortcut + Customize Nexus -->
+    <div class="shortcut-row">
+      <button class="shortcut-button">+ Add shortcut</button>
     </div>
+    <button class="customize-button">Customize Nexus</button>
+
+    <!-- Results iframe -->
+    <iframe name="resultsFrame" class="results-frame"></iframe>
   </div>
 
   <!-- App logic -->
   <script>
     const splashScreen = document.getElementById("splashScreen");
     const loginScreen = document.getElementById("loginScreen");
-    const nexusSearch = document.getElementById("nexusSearch");
+    const loadingNexus = document.getElementById("loadingNexus");
+    const nexusHome = document.getElementById("nexusHome");
     const passwordInput = document.getElementById("passwordInput");
     const togglePassword = document.getElementById("togglePassword");
     const loginButton = document.getElementById("loginButton");
     const errorMessage = document.getElementById("errorMessage");
 
-    // Splash fade-out after 2 seconds
+    // Splash → Login with fade-in
     window.addEventListener("load", () => {
       setTimeout(() => {
         splashScreen.classList.add("fade-out");
@@ -98,16 +110,44 @@
 
     // Handle login
     loginButton.addEventListener("click", () => {
-      const enteredPassword = passwordInput.value;
-      if (enteredPassword === "$N00MURI_DA_G0AT") {
+      if (passwordInput.value === "$N00MURI_DA_G0AT") {
         loginScreen.style.display = "none";
-        nexusSearch.classList.remove("hidden");
+        loadingNexus.classList.remove("hidden");
+        setTimeout(() => {
+          loadingNexus.style.display = "none";
+          nexusHome.classList.remove("hidden");
+        }, 2000);
       } else {
         errorMessage.textContent = "Incorrect password. Try again.";
         errorMessage.classList.add("shake");
         setTimeout(() => errorMessage.classList.remove("shake"), 500);
       }
     });
+
+    // Speech recognition for microphone buttons
+    function setupMic(micId, inputId) {
+      const mic = document.getElementById(micId);
+      const input = document.getElementById(inputId);
+      if (!mic || !input) return;
+
+      mic.addEventListener("click", () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.lang = "en-US";
+          recognition.start();
+
+          recognition.onresult = (event) => {
+            input.value = event.results[0][0].transcript;
+          };
+        } else {
+          alert("Speech recognition not supported in this browser.");
+        }
+      });
+    }
+
+    setupMic("topMic", "topSearchInput");
+    setupMic("mainMic", "mainSearchInput");
   </script>
 </body>
 </html>
