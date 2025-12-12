@@ -38,7 +38,7 @@
 
   <!-- Home -->
   <div id="home" class="screen">
-    <!-- Topbar with search and icons -->
+    <!-- Topbar -->
     <header class="topbar">
       <div class="top-left">
         <button class="ghost">Gmail</button>
@@ -66,7 +66,7 @@
         </div>
       </div>
 
-      <!-- Shortcuts and Add button -->
+      <!-- Shortcuts -->
       <section class="shortcuts">
         <div class="shortcut-grid" id="shortcutGrid"></div>
         <button id="addShortcutBtn" class="ghost">Add shortcut</button>
@@ -77,6 +77,30 @@
     <div class="customize-bottom">
       <button id="customizeBtn" class="ghost">Customize Nexus</button>
     </div>
+  </div>
+
+  <!-- AI Mode Screen -->
+  <div id="ai" class="screen">
+    <main class="ai-main">
+      <h1 class="ai-title">Meet AI Mode</h1>
+      <p class="ai-subtitle">Ask detailed questions for better responses</p>
+
+      <div class="ai-search-box">
+        <input type="text" id="aiSearchInput" placeholder="Ask anything" />
+        <button class="mic-btn" id="aiMicBtn" title="Voice input"></button>
+      </div>
+
+      <div class="ai-examples">
+        <p>Examples you can try:</p>
+        <ul>
+          <li>Walk me through how to use the quadratic equation</li>
+          <li>How does DNA replication work, step-by-step?</li>
+          <li>How does a fractional exponent relate to a square root?</li>
+        </ul>
+      </div>
+
+      <button id="backToHomeBtn" class="ghost">Back to Nexus</button>
+    </main>
   </div>
 
   <!-- Customize Nexus modal -->
