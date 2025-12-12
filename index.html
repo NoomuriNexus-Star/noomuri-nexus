@@ -1,146 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Trigger rebuild: minor comment added for GitHub Pages -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS Search</title>
-
-  <!-- Manifest for PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#b71c1c">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="icon-192.png">
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Register service worker -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("Service Worker registered"))
-        .catch(err => console.error("SW registration failed:", err));
-    }
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noomuri Nexus</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="icon-192.png" />
 </head>
 <body>
-  <!-- Splash Screen -->
-  <div id="splashScreen" class="splash-screen">
-    <img src="icon-192.png" alt="Nexus Logo" class="splash-logo">
-    <div class="spinner"></div>
+  <div id="splash" class="screen active">
+    <img src="icon-512.png" alt="Nexus Logo" class="logo" />
+    <h1>Welcome to Noomuri Nexus</h1>
   </div>
 
-  <!-- Login Screen -->
-  <div id="loginScreen" class="login-screen hidden">
-    <h1 class="app-title">Noomuri Nexus</h1>
-    <div class="password-wrapper">
-      <input type="password" id="passwordInput" placeholder="Password">
-      <span id="togglePassword" class="eye-icon">👁️</span>
-    </div>
-    <button id="loginButton">Login</button>
-    <div id="errorMessage" class="error-message"></div>
+  <div id="login" class="screen">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Enter your name" />
+    <button onclick="startApp()">Enter</button>
   </div>
 
-  <!-- Loading Nexus Screen -->
-  <div id="loadingNexus" class="loading-nexus hidden">
-    <h2>Loading Nexus...</h2>
-    <div class="spinner"></div>
+  <div id="home" class="screen">
+    <h2>Hello, <span id="userDisplay"></span> 👋</h2>
+    <input type="text" id="searchInput" placeholder="Search Google privately..." />
+    <button onclick="runSearch()">Search</button>
+    <div id="results"></div>
   </div>
 
-  <!-- Nexus Homepage -->
-  <div id="nexusHome" class="hidden nexus-home">
-    <h1 class="nexus-logo">
-      <span class="red1">N</span><span class="red2">E</span><span class="red3">X</span>
-      <span class="red4">U</span><span class="red5">S</span>
-    </h1>
-    <form id="mainSearchForm" action="/api/search" method="GET" target="resultsFrame">
-      <input type="text" name="q" id="mainSearchInput" class="google-search-input" placeholder="Search with Nexus...">
-      <span class="mic-icon" id="mainMic">🎤</span>
-      <div class="button-row">
-        <button type="submit" class="google-button">Nexus Search</button>
-      </div>
-    </form>
-
-    <!-- Add shortcut + Customize Nexus -->
-    <div class="shortcut-row">
-      <button class="shortcut-button">+ Add shortcut</button>
-    </div>
-    <button class="customize-button">Customize Nexus</button>
-
-    <!-- Results iframe -->
-    <iframe name="resultsFrame" class="results-frame"></iframe>
-  </div>
-
-  <!-- App logic -->
-  <script>
-    const splashScreen = document.getElementById("splashScreen");
-    const loginScreen = document.getElementById("loginScreen");
-    const loadingNexus = document.getElementById("loadingNexus");
-    const nexusHome = document.getElementById("nexusHome");
-    const passwordInput = document.getElementById("passwordInput");
-    const togglePassword = document.getElementById("togglePassword");
-    const loginButton = document.getElementById("loginButton");
-    const errorMessage = document.getElementById("errorMessage");
-
-    // Splash → Login with fade-in
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        splashScreen.classList.add("fade-out");
-        setTimeout(() => {
-          splashScreen.style.display = "none";
-          loginScreen.classList.remove("hidden");
-          loginScreen.classList.add("fade-in");
-        }, 800);
-      }, 2000);
-    });
-
-    // Toggle password visibility
-    togglePassword.addEventListener("click", () => {
-      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-      passwordInput.setAttribute("type", type);
-    });
-
-    // Handle login
-    loginButton.addEventListener("click", () => {
-      if (passwordInput.value === "$N00MURI_DA_G0AT") {
-        loginScreen.style.display = "none";
-        loadingNexus.classList.remove("hidden");
-        setTimeout(() => {
-          loadingNexus.style.display = "none";
-          nexusHome.classList.remove("hidden");
-        }, 2000);
-      } else {
-        errorMessage.textContent = "Incorrect password. Try again.";
-        errorMessage.classList.add("shake");
-        setTimeout(() => errorMessage.classList.remove("shake"), 500);
-      }
-    });
-
-    // Speech recognition for microphone
-    function setupMic(micId, inputId) {
-      const mic = document.getElementById(micId);
-      const input = document.getElementById(inputId);
-      if (!mic || !input) return;
-
-      mic.addEventListener("click", () => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-          const recognition = new SpeechRecognition();
-          recognition.lang = "en-US";
-          recognition.start();
-
-          recognition.onresult = (event) => {
-            input.value = event.results[0][0].transcript;
-          };
-        } else {
-          alert("Speech recognition not supported in this browser.");
-        }
-      });
-    }
-
-    setupMic("mainMic", "mainSearchInput");
-  </script>
+  <script src="app.js" defer></script>
 </body>
 </html>
