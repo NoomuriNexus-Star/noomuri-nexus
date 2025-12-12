@@ -1,23 +1,12 @@
 {
-  "name": "Noomuri Nexus",
+  "name": "Nexus",
   "short_name": "Nexus",
-  "start_url": "index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#b71c1c",
-  "description": "Privacy-first search experience",
+  "theme_color": "#ff0000",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
-
-
