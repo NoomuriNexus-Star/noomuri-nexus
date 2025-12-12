@@ -38,9 +38,17 @@
 
   <!-- Home -->
   <div id="home" class="screen">
+    <!-- Topbar with search and icons -->
     <header class="topbar">
-      <div class="right">
-        <button id="customizeBtn" class="ghost">Customize Nexus</button>
+      <div class="top-left">
+        <button class="ghost">Gmail</button>
+        <button class="ghost">Images</button>
+      </div>
+      <div class="top-center">
+        <input type="text" class="top-search" placeholder="Search Nexus or type in URL" />
+      </div>
+      <div class="top-right">
+        <button class="ghost">Profile</button>
       </div>
     </header>
 
@@ -49,26 +57,26 @@
         <span class="n1">N</span><span class="n2">E</span><span class="n3">X</span><span class="n4">U</span><span class="n5">S</span>
       </h1>
 
+      <!-- Main search bar -->
       <div class="search-row">
         <div class="search-box">
-          <button class="lens-btn" id="lensBtn" title="Nexus Lens"></button>
           <input type="text" id="searchInput" placeholder="Search the web with Nexus" />
           <button class="mic-btn" id="micBtn" title="Voice search"></button>
-          <button class="ai-btn" id="aiBtn" title="AI mode">AI</button>
-        </div>
-        <div class="search-actions">
-          <button id="searchBtn">Nexus Search</button>
-          <button id="feelingLuckyBtn">I’m Feeling Lucky</button>
+          <button class="ai-toggle" id="aiBtn" title="AI Mode">AI Mode</button>
         </div>
       </div>
 
+      <!-- Shortcuts and Add button -->
       <section class="shortcuts">
         <div class="shortcut-grid" id="shortcutGrid"></div>
         <button id="addShortcutBtn" class="ghost">Add shortcut</button>
       </section>
-
-      <section id="results" class="results"></section>
     </main>
+
+    <!-- Bottom-right Customize Nexus -->
+    <div class="customize-bottom">
+      <button id="customizeBtn" class="ghost">Customize Nexus</button>
+    </div>
   </div>
 
   <!-- Customize Nexus modal -->
