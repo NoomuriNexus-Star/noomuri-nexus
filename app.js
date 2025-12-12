@@ -4,14 +4,13 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   el.classList.add('active');
-  if (id === 'login' || id === 'home') el.classList.add('fade-in');
+  el.classList.add('fade-in');
 }
 
 window.addEventListener('load', () => {
-  // Splash -> login
+  // Splash → Login
   setTimeout(() => {
-    const splash = document.getElementById('splash');
-    splash.classList.add('fade-out');
+    document.getElementById('splash').classList.add('fade-out');
     setTimeout(() => showScreen('login'), 800);
   }, 2200);
 
@@ -34,13 +33,26 @@ window.addEventListener('load', () => {
     }
   });
 
-  // Customize modal, shortcuts, lens, mic, AI setup (same as before)
+  // Customize modal
   setupCustomizeModal();
+
+  // Shortcuts
   loadShortcuts();
   document.getElementById('addShortcutBtn').addEventListener('click', addShortcutPrompt);
-  document.getElementById('lensBtn').addEventListener('click', openLensOverlay);
+
+  // Mic button
   document.getElementById('micBtn').addEventListener('click', startVoiceSearch);
-  document.getElementById('aiBtn').addEventListener('click', toggleAIMode);
+  document.getElementById('aiMicBtn').addEventListener('click', startVoiceSearch);
+
+  // AI Mode toggle
+  document.getElementById('aiBtn').addEventListener('click', () => {
+    showScreen('ai');
+  });
+
+  // Back to home from AI Mode
+  document.getElementById('backToHomeBtn').addEventListener('click', () => {
+    showScreen('home');
+  });
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -58,11 +70,28 @@ function startApp() {
       applySavedBackground();
     }, 1400);
   } else {
-    // Shake animation on wrong password
     loginCard.classList.add('shake');
     setTimeout(() => loginCard.classList.remove('shake'), 500);
     alert("Incorrect password. Try again.");
   }
 }
 
-// Search, voice search, AI mode, customize modal, shortcuts functions remain same as before
+// Voice search logic
+function startVoiceSearch() {
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    const input = document.querySelector('.screen.active input[type="text"]');
+    if (input) input.value = transcript;
+  };
+
+  recognition.onerror = (event) => {
+    alert("Voice search error: " + event.error);
+  };
+
+  recognition.start();
+}
