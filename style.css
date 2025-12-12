@@ -1,244 +1,238 @@
-/* General reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Arial, sans-serif;
+// Screen switching with fades
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  if (id === 'login' || id === 'home') el.classList.add('fade-in');
 }
 
-body {
-  background: #000000;
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
+window.addEventListener('load', () => {
+  // Splash -> login (with fade-out)
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    splash.classList.add('fade-out');
+    setTimeout(() => showScreen('login'), 800);
+  }, 2200);
+
+  // Login events
+  document.getElementById('loginBtn').addEventListener('click', startApp);
+  document.getElementById('username').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') startApp();
+  });
+
+  // Search events
+  document.getElementById('searchBtn').addEventListener('click', runSearch);
+  document.getElementById('feelingLuckyBtn').addEventListener('click', feelingLucky);
+  document.getElementById('searchInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') runSearch();
+  });
+
+  // Customize modal + settings
+  setupCustomizeModal();
+
+  // Shortcuts
+  loadShortcuts();
+  document.getElementById('addShortcutBtn').addEventListener('click', addShortcutPrompt);
+
+  // Lens + mic + AI
+  document.getElementById('lensBtn').addEventListener('click', openLensOverlay);
+  document.getElementById('micBtn').addEventListener('click', startVoiceSearch);
+  document.getElementById('aiBtn').addEventListener('click', toggleAIMode);
+
+  // Service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+});
+
+function startApp() {
+  const name = document.getElementById('username').value.trim();
+  if (!name) return;
+  localStorage.setItem('nexusUser', name);
+
+  // Login -> Loading Nexus interstitial
+  showScreen('loading');
+  setTimeout(() => {
+    // Loading -> Home with fade in
+    showScreen('home');
+    // Apply stored background + accent
+    applySavedBackground();
+    const savedAccent = localStorage.getItem('nexusAccent');
+    if (savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
+    document.querySelector('.nexus-brand').classList.add('fade-in');
+  }, 1400);
 }
 
-/* Splash screen */
-.splash-screen {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 1s ease-in-out;
+// Search using your proxy endpoint
+async function runSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '<div class="spinner" style="margin: 0 auto;"></div>';
+
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+
+    resultsEl.innerHTML = '';
+    data.results.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'result-card fade-in';
+      card.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a><p>${item.snippet}</p>`;
+      resultsEl.appendChild(card);
+    });
+  } catch (err) {
+    resultsEl.innerHTML = `<p style="color:#f88;">Failed to fetch results.</p>`;
+  }
 }
 
-.splash-logo {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 20px;
+function feelingLucky() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return runSearch();
+  window.open(`/api/search?lucky=1&q=${encodeURIComponent(q)}`, '_blank');
 }
 
-.spinner {
-  border: 6px solid #333;
-  border-top: 6px solid #b71c1c;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  animation: spin 1s linear infinite;
+// Voice search across languages
+function startVoiceSearch() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return alert('Voice search not supported in this browser.');
+  const rec = new SpeechRecognition();
+  rec.lang = localStorage.getItem('nexusLang') || 'en-US'; // user-settable later
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  rec.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById('searchInput').value = transcript;
+    runSearch();
+  };
+  rec.onerror = () => alert('Voice recognition error.');
+  rec.start();
 }
 
-.fade-out { animation: fadeOut 0.8s forwards; }
-.hidden { display: none; }
-
-/* Login screen */
-.login-screen {
-  background: #000;
-  padding: 40px;
-  border-radius: 12px;
-  text-align: center;
-  width: 320px;
-  z-index: 10;
-  opacity: 0;
+// AI Mode placeholder
+let aiMode = false;
+function toggleAIMode() {
+  aiMode = !aiMode;
+  document.getElementById('aiBtn').textContent = aiMode ? 'AI ON' : 'AI';
+  // In AI mode, you might route to a different endpoint or change rendering.
 }
 
-.login-screen.fade-in { animation: fadeIn 1s forwards; }
+// Customize modal logic
+function setupCustomizeModal() {
+  const modal = document.getElementById('customizeModal');
+  const btn = document.getElementById('customizeBtn');
+  const closeBtn = document.getElementById('closeCustomize');
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.tab-panel');
+  const bgButtons = document.querySelectorAll('.bg-item');
+  const upload = document.getElementById('bgUpload');
+  const resetBg = document.getElementById('resetBg');
+  const accentPicker = document.getElementById('accentPicker');
+  const aiToggle = document.getElementById('aiToggle');
 
-.app-title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #b71c1c;
-  margin-bottom: 20px;
+  btn.addEventListener('click', () => modal.classList.add('show'));
+  closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+  }));
+
+  bgButtons.forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.bg === 'custom') upload.click();
+    else setBackground(b.dataset.bg);
+  }));
+  upload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setBackground(reader.result);
+    reader.readAsDataURL(file);
+  });
+  resetBg.addEventListener('click', () => setBackground('black'));
+
+  accentPicker.addEventListener('input', (e) => {
+    document.documentElement.style.setProperty('--accent', e.target.value);
+    localStorage.setItem('nexusAccent', e.target.value);
+  });
+
+  aiToggle.addEventListener('change', (e) => {
+    document.getElementById('aiBtn').style.display = e.target.checked ? 'inline-block' : 'none';
+    localStorage.setItem('nexusAIModeToggle', e.target.checked ? '1' : '0');
+  });
+
+  // Restore settings
+  const savedAccent = localStorage.getItem('nexusAccent');
+  if (savedAccent) {
+    accentPicker.value = savedAccent;
+    document.documentElement.style.setProperty('--accent', savedAccent);
+  }
+  const savedToggle = localStorage.getItem('nexusAIModeToggle');
+  if (savedToggle !== null) {
+    const show = savedToggle === '1';
+    aiToggle.checked = show;
+    document.getElementById('aiBtn').style.display = show ? 'inline-block' : 'none';
+  }
 }
 
-.password-wrapper { position: relative; margin-bottom: 20px; }
-
-.password-wrapper input {
-  width: 100%;
-  padding: 10px 40px 10px 12px;
-  border: 2px solid #b71c1c;
-  border-radius: 6px;
-  background: #111;
-  color: #fff;
-  font-size: 1rem;
+function setBackground(value) {
+  if (value === 'black') {
+    document.documentElement.style.setProperty('--bg', '#000');
+    document.body.style.backgroundImage = '';
+  } else if (value.startsWith('assets/') || value.startsWith('data:image')) {
+    document.body.style.backgroundImage = `url("${value}")`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+  } else {
+    document.documentElement.style.setProperty('--bg', value);
+    document.body.style.backgroundImage = '';
+  }
+  localStorage.setItem('nexusBg', value);
 }
 
-.eye-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: #b71c1c;
+function applySavedBackground() {
+  const saved = localStorage.getItem('nexusBg') || 'black';
+  setBackground(saved);
 }
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: #b71c1c;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease;
+// Shortcuts
+function loadShortcuts() {
+  const grid = document.getElementById('shortcutGrid');
+  const data = JSON.parse(localStorage.getItem('nexusShortcuts') || '[]');
+  grid.innerHTML = '';
+  data.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'shortcut';
+    el.innerHTML = `<strong>${s.name}</strong><br><span>${s.url}</span>`;
+    el.onclick = () => window.open(s.url, '_blank');
+    el.oncontextmenu = (e) => {
+      e.preventDefault();
+      const confirmRemove = confirm(`Remove shortcut "${s.name}"?`);
+      if (confirmRemove) {
+        data.splice(i, 1);
+        localStorage.setItem('nexusShortcuts', JSON.stringify(data));
+        loadShortcuts();
+      }
+    };
+    grid.appendChild(el);
+  });
 }
 
-button:hover { background: #e53935; }
-
-.error-message {
-  margin-top: 12px;
-  color: #ff4444;
-  font-size: 0.9rem;
-  min-height: 20px;
+function addShortcutPrompt() {
+  const name = prompt('Shortcut name');
+  if (!name) return;
+  const url = prompt('Shortcut URL (include https://)');
+  if (!url) return;
+  const data = JSON.parse(localStorage.getItem('nexusShortcuts') || '[]');
+  data.push({ name, url });
+  localStorage.setItem('nexusShortcuts', JSON.stringify(data));
+  loadShortcuts();
 }
 
-/* Loading Nexus screen */
-.loading-nexus {
-  background: #000;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+// Lens overlay (placeholder interaction)
+function openLensOverlay() {
+  alert('Nexus Lens: Coming soon. Upload an image or paste a URL to analyze.');
 }
-
-.loading-nexus h2 {
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-}
-
-/* Nexus homepage */
-.nexus-home {
-  background: #fff;
-  color: #000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-}
-
-/* Multishade red Nexus logo */
-.nexus-logo {
-  font-size: 5rem;
-  font-weight: bold;
-  font-family: Arial, sans-serif;
-  margin: 40px 0 20px 0;
-}
-
-.nexus-logo .red1 { color: #b71c1c; }
-.nexus-logo .red2 { color: #e53935; }
-.nexus-logo .red3 { color: #ff1744; }
-.nexus-logo .red4 { color: #d32f2f; }
-.nexus-logo .red5 { color: #c62828; }
-
-/* Google-style search input */
-.google-search-input {
-  width: 60%;
-  max-width: 600px;
-  padding: 12px 40px 12px 20px;
-  border: 1px solid #dcdcdc;
-  border-radius: 24px;
-  font-size: 1rem;
-  margin: 10px auto;
-  box-shadow: 0 1px 6px rgba(32,33,36,0.28);
-  position: relative;
-}
-
-.google-search-input:focus { border-color: #b71c1c; }
-
-/* Microphone icon */
-.mic-icon {
-  position: relative;
-  left: -30px;
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-/* Buttons row */
-.button-row { margin-top: 20px; text-align: center; }
-
-.google-button {
-  background: #f8f9fa;
-  border: 1px solid #f8f9fa;
-  border-radius: 4px;
-  color: #3c4043;
-  font-size: 0.9rem;
-  margin: 5px;
-  padding: 10px 20px;
-  cursor: pointer;
-}
-
-.google-button:hover {
-  border: 1px solid #dadce0;
-  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-}
-
-/* Add shortcut + Customize Nexus */
-.shortcut-row { margin-top: 20px; }
-
-.shortcut-button {
-  background: #f8f9fa;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
-}
-
-.customize-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #f8f9fa;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
-}
-
-/* Results iframe */
-.results-frame {
-  width: 100%;
-  height: 70vh;
-  border: none;
-  margin-top: 30px;
-}
-
-/* Animations */
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
-}
-.shake { animation: shake 0.5s; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
