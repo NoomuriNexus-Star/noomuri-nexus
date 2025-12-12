@@ -19,8 +19,12 @@
   <!-- Login -->
   <div id="login" class="screen">
     <div class="login-card fade-in">
-      <h2>Login</h2>
-      <input type="text" id="username" placeholder="Enter your name" />
+      <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
+      <h2>Enter Password</h2>
+      <div class="password-row">
+        <input type="password" id="password" placeholder="Password" />
+        <button id="togglePassword" class="emoji-btn">👁️</button>
+      </div>
       <button id="loginBtn">Enter</button>
     </div>
   </div>
@@ -35,8 +39,6 @@
   <!-- Home -->
   <div id="home" class="screen">
     <header class="topbar">
-      <div class="left"></div>
-      <div class="center"></div>
       <div class="right">
         <button id="customizeBtn" class="ghost">Customize Nexus</button>
       </div>
