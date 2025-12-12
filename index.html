@@ -3,28 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Noomuri Nexus</title>
+  <title>Nexus</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Splash -->
   <div id="splash" class="screen active">
-    <img src="icon-512.png" alt="Nexus Logo" class="logo" />
-    <h1>Welcome to Noomuri Nexus</h1>
+    <div class="spinner"></div>
+    <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
+    <h1 class="fade-text">Loading Nexus...</h1>
   </div>
 
+  <!-- Login -->
   <div id="login" class="screen">
-    <h2>Login</h2>
-    <input type="text" id="username" placeholder="Enter your name" />
-    <button onclick="startApp()">Enter</button>
+    <div class="login-card fade-in">
+      <h2>Login</h2>
+      <input type="text" id="username" placeholder="Enter your name" />
+      <button id="loginBtn">Enter</button>
+    </div>
   </div>
 
+  <!-- Loading interstitial -->
+  <div id="loading" class="screen">
+    <div class="spinner"></div>
+    <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
+    <h2 class="fade-text">Loading Nexus...</h2>
+  </div>
+
+  <!-- Home -->
   <div id="home" class="screen">
-    <h2>Hello, <span id="userDisplay"></span> 👋</h2>
-    <input type="text" id="searchInput" placeholder="Search Google privately..." />
-    <button onclick="runSearch()">Search</button>
-    <div id="results"></div>
+    <header class="topbar">
+      <div class="left"></div>
+      <div class="center"></div>
+      <div class="right">
+        <button id="customizeBtn" class="ghost">Customize Nexus</button>
+      </div>
+    </header>
+
+    <main class="home-main">
+      <h1 class="nexus-brand">
+        <span class="n1">N</span><span class="n2">E</span><span class="n3">X</span><span class="n4">U</span><span class="n5">S</span>
+      </h1>
+
+      <div class="search-row">
+        <div class="search-box">
+          <button class="lens-btn" id="lensBtn" title="Nexus Lens"></button>
+          <input type="text" id="searchInput" placeholder="Search the web with Nexus" />
+          <button class="mic-btn" id="micBtn" title="Voice search"></button>
+          <button class="ai-btn" id="aiBtn" title="AI mode">AI</button>
+        </div>
+        <div class="search-actions">
+          <button id="searchBtn">Nexus Search</button>
+          <button id="feelingLuckyBtn">I’m Feeling Lucky</button>
+        </div>
+      </div>
+
+      <section class="shortcuts">
+        <div class="shortcut-grid" id="shortcutGrid"></div>
+        <button id="addShortcutBtn" class="ghost">Add shortcut</button>
+      </section>
+
+      <section id="results" class="results"></section>
+    </main>
+  </div>
+
+  <!-- Customize Nexus modal -->
+  <div id="customizeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Customize Nexus</h3>
+        <button id="closeCustomize" class="ghost">Close</button>
+      </div>
+      <div class="modal-tabs">
+        <button class="tab active" data-tab="backgrounds">Background</button>
+        <button class="tab" data-tab="shortcuts">Shortcuts</button>
+        <button class="tab" data-tab="appearance">Appearance</button>
+      </div>
+      <div class="tab-panel active" id="tab-backgrounds">
+        <div class="bg-grid">
+          <button class="bg-item" data-bg="black">Solid black (default)</button>
+          <button class="bg-item" data-bg="assets/backgrounds/red-gradient.jpg">Red gradient</button>
+          <button class="bg-item" data-bg="assets/backgrounds/dark-texture.jpg">Dark texture</button>
+          <button class="bg-item" data-bg="custom">Upload image…</button>
+        </div>
+        <input type="file" id="bgUpload" accept="image/*" style="display:none;" />
+        <button id="resetBg" class="ghost">Reset background</button>
+      </div>
+      <div class="tab-panel" id="tab-shortcuts">
+        <p>Manage your shortcuts. Right‑click to remove.</p>
+      </div>
+      <div class="tab-panel" id="tab-appearance">
+        <label class="row">
+          <span>Accent color</span>
+          <input type="color" id="accentPicker" value="#ff0000" />
+        </label>
+        <label class="row">
+          <span>Show AI mode toggle</span>
+          <input type="checkbox" id="aiToggle" checked />
+        </label>
+      </div>
+    </div>
   </div>
 
   <script src="app.js" defer></script>
