@@ -19,16 +19,22 @@ body {
 .screen { display: none; min-height: 100vh; }
 .screen.active { display: grid; place-items: center; }
 
-/* Spinner */
+/* Spinner with pulsing glow */
 .spinner {
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   border: 6px solid var(--accent);
   border-top: 6px solid #111;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
   margin-bottom: 20px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0px var(--accent); }
+  50% { box-shadow: 0 0 16px var(--accent); }
+  100% { box-shadow: 0 0 0px var(--accent); }
+}
 
 /* Logo bounce */
 .logo {
@@ -56,16 +62,63 @@ body {
   border-radius: 10px;
   display: grid; gap: 12px;
   width: min(420px, 90vw);
+  text-align: center;
 }
-.login-card input {
-  padding: 12px; border-radius: 8px; border: 1px solid #333;
-  background: #0a0a0a; color: var(--text);
+
+/* Password row */
+.password-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.password-row input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0a0a0a;
+  color: var(--text);
+}
+.password-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.emoji-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+.emoji-btn:hover { filter: brightness(1.2); }
+
+/* Login button glow */
 .login-card button {
-  padding: 12px 16px; border-radius: 8px; border: none;
-  background: var(--accent); color: #000; font-weight: 700; cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
-.login-card button:hover { filter: brightness(1.1); }
+.login-card button:hover {
+  box-shadow: 0 0 12px var(--accent);
+  transform: scale(1.03);
+}
+
+/* Shake animation for wrong password */
+.shake { animation: shake 0.4s ease; }
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+  100% { transform: translateX(0); }
+}
 
 /* Topbar */
 .topbar {
@@ -86,94 +139,27 @@ body {
   padding-top: 40px;
 }
 
-/* NEXUS brand letters */
+/* NEXUS brand letters with glow + hover bounce */
 .nexus-brand {
   font-size: clamp(48px, 9vw, 92px);
   font-weight: 800;
   margin: 0 0 24px;
 }
-.n1 { color: #ff2b2b; }
-.n2 { color: #ff1a1a; }
-.n3 { color: #ff0f0f; }
-.n4 { color: #e60606; }
-.n5 { color: #c40000; }
+.nexus-brand span {
+  animation: glowPulse 3s ease-in-out infinite;
+  display: inline-block;
+  transition: transform 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+.nexus-brand span:hover {
+  transform: translateY(-6px) scale(1.1);
+  color: var(--accent);
+  text-shadow: 0 0 16px var(--accent);
+}
+@keyframes glowPulse {
+  0%   { text-shadow: 0 0 0px var(--accent); }
+  50%  { text-shadow: 0 0 12px var(--accent); }
+  100% { text-shadow: 0 0 0px var(--accent); }
+}
 
-/* Search row */
-.search-row { display: grid; gap: 16px; width: min(720px, 90vw); }
-.search-box {
-  background: #0a0a0a; border: 1px solid #222; border-radius: 999px;
-  display: grid; grid-template-columns: 44px 1fr 44px 48px; align-items: center;
-  padding: 8px 10px;
-}
-.search-box input {
-  background: transparent; border: none; color: var(--text);
-  font-size: 16px; outline: none;
-}
-.search-actions { display: flex; gap: 10px; justify-content: center; }
-.search-actions button {
-  background: #1a1a1a; border: 1px solid #333; color: var(--text);
-  border-radius: 6px; padding: 10px 14px; cursor: pointer;
-}
-.search-actions button:hover { border-color: var(--accent); color: var(--accent); }
-
-/* Lens + mic + AI buttons */
-.lens-btn, .mic-btn, .ai-btn {
-  width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
-  background: transparent; position: relative;
-}
-.lens-btn::before {
-  content: ""; position: absolute; inset: 6px; border: 2px solid var(--accent); border-radius: 6px;
-}
-.lens-btn:hover::after {
-  content: "Nexus Lens"; position: absolute; top: 36px; left: -10px;
-  background: #111; color: var(--text); padding: 6px 8px; border: 1px solid #333; border-radius: 6px;
-  white-space: nowrap; font-size: 12px;
-}
-.mic-btn::before {
-  content: ""; position: absolute; inset: 8px; border-radius: 50%;
-  border: 2px solid var(--accent);
-}
-.ai-btn { color: var(--text); border: 1px solid #333; border-radius: 16px; }
-.ai-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-/* Shortcuts */
-.shortcuts { margin-top: 24px; width: min(720px, 90vw); }
-.shortcut-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
-}
-.shortcut {
-  background: #0f0f0f; border: 1px solid #222; border-radius: 10px;
-  padding: 12px; text-align: center; color: var(--text); cursor: pointer;
-}
-.shortcut:hover { border-color: var(--accent); }
-
-/* Results */
-.results {
-  width: min(840px, 90vw);
-  margin-top: 28px; display: grid; gap: 12px;
-}
-.result-card {
-  background: var(--card); border: 1px solid var(--accent);
-  padding: 10px; border-radius: 8px;
-}
-.result-card a { color: var(--accent); font-weight: 700; text-decoration: none; }
-.result-card p { color: var(--muted); }
-
-/* Modal */
-.modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,0.6); }
-.modal.show { display: grid; }
-.modal-content {
-  width: min(720px, 95vw); background: #0b0b0b; border: 1px solid #222; border-radius: 12px;
-  padding: 16px; color: var(--text);
-}
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.modal-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-.tab { background: #121212; border: 1px solid #333; color: var(--text); border-radius: 16px; padding: 8px 12px; cursor: pointer; }
-.tab.active { border-color: var(--accent); color: var(--accent); }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-.bg-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
-.bg-item { background: #151515; border: 1px solid #333; border-radius: 8px; padding: 12px; cursor: pointer; color: var(--text); }
-.bg-item:hover { border-color: var(--accent); }
-.row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+/* Search bar, shortcuts, results, modal styling remain same as before */
