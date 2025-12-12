@@ -1,11 +1,14 @@
 const CORRECT_PASSWORD = "$N00MURI_DA_G0AT";
+const NEXUS_PROXY_BASE = "https://nexus-proxy.YOURNAME.workers.dev"; // replace with your Worker URL
 
 // === Utility: show screen ===
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
-  el.classList.add('active');
-  el.classList.add('fade-in');
+  if (el) {
+    el.classList.add('active');
+    el.classList.add('fade-in');
+  }
 }
 
 // === Splash / Login flow ===
@@ -45,7 +48,7 @@ window.addEventListener('load', () => {
   // Mic buttons
   document.getElementById('micBtn').addEventListener('click', startVoiceSearch);
   document.getElementById('aiMicBtn').addEventListener('click', startVoiceSearch);
-  document.getElementById('aiResultsMicBtn').addEventListener('click', startVoiceSearch);
+  document.getElementById('resultsMicBtn').addEventListener('click', startVoiceSearch);
 
   // AI Mode toggle
   document.getElementById('aiBtn').addEventListener('click', () => {
@@ -54,12 +57,15 @@ window.addEventListener('load', () => {
 
   // Back buttons
   document.getElementById('backToHomeBtn').addEventListener('click', () => showScreen('home'));
-  document.getElementById('backToAiBtn').addEventListener('click', () => showScreen('ai'));
-  document.getElementById('backToHomeBtn2').addEventListener('click', () => showScreen('home'));
+  document.getElementById('resultsHomeBtn').addEventListener('click', () => showScreen('home'));
 
-  // AI Mode setup
-  setupAiMode();
-  setupAiResults();
+  // Results tabs
+  document.querySelectorAll('#results .ai-tabs .tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      const q = document.getElementById('resultsInput').value || '';
+      proxySearch(q, tabBtn.dataset.tab);
+    });
+  });
 
   // Apply saved theme/background
   applySavedTheme();
@@ -117,18 +123,6 @@ function setupCustomizeModal() {
   customizeBtn.addEventListener('click', () => { modal.style.display = 'grid'; });
   closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
 
-  // Tabs
-  const tabs = document.querySelectorAll('.modal-tabs .tab');
-  const panels = document.querySelectorAll('.tab-panel');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
-    });
-  });
-
   // Theme options
   const themeRadios = document.querySelectorAll('.theme-options input[name="theme"]');
   themeRadios.forEach(radio => {
@@ -142,8 +136,6 @@ function setupCustomizeModal() {
       );
       updateThumbnail();
     });
-    radio.addEventListener('mouseenter', () => previewTheme(radio.value));
-    radio.addEventListener('mouseleave', () => { applySavedTheme(); updateThumbnail(); });
   });
 
   // Accent swatches
@@ -160,25 +152,7 @@ function setupCustomizeModal() {
       );
       updateThumbnail();
     });
-    swatch.addEventListener('mouseenter', () => {
-      const color = swatch.dataset.color;
-      document.documentElement.style.setProperty('--accent', color);
-      updateThumbnail();
-    });
-    swatch.addEventListener('mouseleave', () => { applySavedTheme(); updateThumbnail(); });
   });
-
-  // Shortcuts toggle
-  const showShortcuts = document.getElementById('showShortcuts');
-  showShortcuts.addEventListener('change', () => {
-    document.querySelector('.shortcuts').style.display = showShortcuts.checked ? 'block' : 'none';
-  });
-
-  // Cards toggle
-  const showCards = document.getElementById('showCards');
-  const continueTabs = document.getElementById('continueTabs');
-  showCards.addEventListener('change', () => console.log("Cards visible:", showCards.checked));
-  continueTabs.addEventListener('change', () => console.log("Continue tabs:", continueTabs.checked));
 
   // Reset / Restore / Discard / Apply / Save
   document.getElementById('resetNexusBtn').addEventListener('click', resetNexus);
@@ -243,8 +217,47 @@ function updateThumbnail() {
     getComputedStyle(document.documentElement).getPropertyValue('--card');
   thumb.querySelector('.thumbnail-search').style.background =
     getComputedStyle(document.documentElement).getPropertyValue('--card');
-  thumb.querySelector('.thumbnail-shortcuts').style.setProperty('--accent',
-    getComputedStyle(document.documentElement).getPropertyValue('--accent'));
+}
+
+// === Reset / Restore / Preview workflow ===
+let previewThemeState = null;
+
+function applyPreview() {
+  previewThemeState = {
+    bg: document.documentElement.style.getPropertyValue('--bg'),
+    text: document.documentElement.style.getPropertyValue('--text'),
+    card: document.documentElement.style.getPropertyValue('--card'),
+    accent: document.documentElement.style.getPropertyValue('--accent')
+  };
+  updateThumbnail();
+  alert("Preview applied temporarily. Use Save Settings to commit.");
+}
+function savePreview() {
+  if (!previewThemeState) {
+    alert("No preview applied yet.");
+    return;
+  }
+  saveTheme(previewThemeState.bg, previewThemeState.text, previewThemeState.card, previewThemeState.accent);
+  alert("Settings saved!");
+}
+
+function discardPreview() {
+  const saved = localStorage.getItem('nexus-theme');
+  if (!saved) {
+    alert("No saved settings found.");
+    return;
+  }
+  const { bg, text, card, accent } = JSON.parse(saved);
+  document.documentElement.style.setProperty('--bg', bg);
+  document.documentElement.style.setProperty('--text', text);
+  document.documentElement.style.setProperty('--card', card);
+  document.documentElement.style.setProperty('--accent', accent);
+
+  applySavedBackground();
+  loadShortcuts();
+  updateThumbnail();
+
+  alert("Preview discarded. Reverted to last saved settings.");
 }
 
 // === Reset Nexus with backup ===
@@ -303,48 +316,6 @@ function restoreNexus() {
   showScreen('home');
 }
 
-// === Preview workflow ===
-let previewThemeState = null;
-
-function applyPreview() {
-  previewThemeState = {
-    bg: document.documentElement.style.getPropertyValue('--bg'),
-    text: document.documentElement.style.getPropertyValue('--text'),
-    card: document.documentElement.style.getPropertyValue('--card'),
-    accent: document.documentElement.style.getPropertyValue('--accent')
-  };
-  updateThumbnail();
-  alert("Preview applied temporarily. Use Save Settings to commit.");
-}
-
-function savePreview() {
-  if (!previewThemeState) {
-    alert("No preview applied yet.");
-    return;
-  }
-  saveTheme(previewThemeState.bg, previewThemeState.text, previewThemeState.card, previewThemeState.accent);
-  alert("Settings saved!");
-}
-
-function discardPreview() {
-  const saved = localStorage.getItem('nexus-theme');
-  if (!saved) {
-    alert("No saved settings found.");
-    return;
-  }
-  const { bg, text, card, accent } = JSON.parse(saved);
-  document.documentElement.style.setProperty('--bg', bg);
-  document.documentElement.style.setProperty('--text', text);
-  document.documentElement.style.setProperty('--card', card);
-  document.documentElement.style.setProperty('--accent', accent);
-
-  applySavedBackground();
-  loadShortcuts();
-  updateThumbnail();
-
-  alert("Preview discarded. Reverted to last saved settings.");
-}
-
 // === Shortcuts ===
 function loadShortcuts() {
   const grid = document.getElementById('shortcutGrid');
@@ -369,37 +340,50 @@ function addShortcutPrompt() {
   loadShortcuts();
 }
 
-// === AI Mode ===
-function setupAiMode() {
-  const input = document.getElementById('aiSearchInput');
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      showScreen('ai-results');
-      fetchAiResults(input.value);
-    }
+// === Proxy Search Results ===
+function proxySearch(query, tab = "all") {
+  showScreen('results');
+  const input = document.getElementById('resultsInput');
+  if (input) input.value = query;
+
+  // Set active tab state
+  document.querySelectorAll('#results .ai-tabs .tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
   });
+
+  const frame = document.getElementById('resultsFrame');
+  const url = `${NEXUS_PROXY_BASE}/search?q=${encodeURIComponent(query)}&tab=${encodeURIComponent(tab)}`;
+  frame.src = url;
 }
 
-function setupAiResults() {
-  const input = document.getElementById('aiResultsInput');
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      fetchAiResults(input.value);
-    }
-  });
+// === Wire search bars ===
+(() => {
+  const homeSearchInput = document.querySelector('#home .search-bar input');
+  const aiSearchInput = document.getElementById('aiSearchInput');
+  const resultsInput = document.getElementById('resultsInput');
 
-  const tabs = document.querySelectorAll('.ai-tabs .tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      fetchAiResults(document.getElementById('aiResultsInput').value, tab.dataset.tab);
+  if (homeSearchInput) {
+    homeSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') proxySearch(e.target.value, 'all');
     });
-  });
-}
+  }
 
-function fetchAiResults(query, tab = 'all') {
-  const content = document.getElementById('aiResultsContent');
-  content.innerHTML = `<p>Showing ${tab} results for: <strong>${query}</strong></p>`;
-  // Placeholder: integrate backend API here
-}
+  if (aiSearchInput) {
+    aiSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') proxySearch(e.target.value, 'all');
+    });
+  }
+
+  if (resultsInput) {
+    resultsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') proxySearch(e.target.value,
+        document.querySelector('#results .ai-tabs .tab.active')?.dataset.tab || 'all'
+      );
+    });
+  }
+
+  const resultsHomeBtn = document.getElementById('resultsHomeBtn');
+  if (resultsHomeBtn) {
+    resultsHomeBtn.addEventListener('click', () => showScreen('home'));
+  }
+})();
