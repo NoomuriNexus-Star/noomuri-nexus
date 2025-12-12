@@ -1,5 +1,6 @@
 const CORRECT_PASSWORD = "$N00MURI_DA_G0AT";
 
+// === Utility: show screen ===
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
@@ -7,6 +8,7 @@ function showScreen(id) {
   el.classList.add('fade-in');
 }
 
+// === Splash / Login flow ===
 window.addEventListener('load', () => {
   // Splash → Login
   setTimeout(() => {
@@ -40,19 +42,28 @@ window.addEventListener('load', () => {
   loadShortcuts();
   document.getElementById('addShortcutBtn').addEventListener('click', addShortcutPrompt);
 
-  // Mic button
+  // Mic buttons
   document.getElementById('micBtn').addEventListener('click', startVoiceSearch);
   document.getElementById('aiMicBtn').addEventListener('click', startVoiceSearch);
+  document.getElementById('aiResultsMicBtn').addEventListener('click', startVoiceSearch);
 
   // AI Mode toggle
   document.getElementById('aiBtn').addEventListener('click', () => {
     showScreen('ai');
   });
 
-  // Back to home from AI Mode
-  document.getElementById('backToHomeBtn').addEventListener('click', () => {
-    showScreen('home');
-  });
+  // Back buttons
+  document.getElementById('backToHomeBtn').addEventListener('click', () => showScreen('home'));
+  document.getElementById('backToAiBtn').addEventListener('click', () => showScreen('ai'));
+  document.getElementById('backToHomeBtn2').addEventListener('click', () => showScreen('home'));
+
+  // AI Mode setup
+  setupAiMode();
+  setupAiResults();
+
+  // Apply saved theme/background
+  applySavedTheme();
+  applySavedBackground();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -67,6 +78,7 @@ function startApp() {
     showScreen('loading');
     setTimeout(() => {
       showScreen('home');
+      applySavedTheme();
       applySavedBackground();
     }, 1400);
   } else {
@@ -76,7 +88,7 @@ function startApp() {
   }
 }
 
-// Voice search logic
+// === Voice search ===
 function startVoiceSearch() {
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   recognition.lang = 'en-US';
@@ -94,4 +106,300 @@ function startVoiceSearch() {
   };
 
   recognition.start();
+}
+
+// === Customize Nexus Modal ===
+function setupCustomizeModal() {
+  const customizeBtn = document.getElementById('customizeBtn');
+  const modal = document.getElementById('customizeModal');
+  const closeBtn = document.getElementById('closeCustomize');
+
+  customizeBtn.addEventListener('click', () => { modal.style.display = 'grid'; });
+  closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+
+  // Tabs
+  const tabs = document.querySelectorAll('.modal-tabs .tab');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // Theme options
+  const themeRadios = document.querySelectorAll('.theme-options input[name="theme"]');
+  themeRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      previewTheme(radio.value);
+      saveTheme(
+        document.documentElement.style.getPropertyValue('--bg'),
+        document.documentElement.style.getPropertyValue('--text'),
+        document.documentElement.style.getPropertyValue('--card'),
+        document.documentElement.style.getPropertyValue('--accent')
+      );
+      updateThumbnail();
+    });
+    radio.addEventListener('mouseenter', () => previewTheme(radio.value));
+    radio.addEventListener('mouseleave', () => { applySavedTheme(); updateThumbnail(); });
+  });
+
+  // Accent swatches
+  const swatches = document.querySelectorAll('.accent-swatches .swatch');
+  swatches.forEach(swatch => {
+    swatch.addEventListener('click', () => {
+      const color = swatch.dataset.color;
+      document.documentElement.style.setProperty('--accent', color);
+      saveTheme(
+        document.documentElement.style.getPropertyValue('--bg'),
+        document.documentElement.style.getPropertyValue('--text'),
+        document.documentElement.style.getPropertyValue('--card'),
+        color
+      );
+      updateThumbnail();
+    });
+    swatch.addEventListener('mouseenter', () => {
+      const color = swatch.dataset.color;
+      document.documentElement.style.setProperty('--accent', color);
+      updateThumbnail();
+    });
+    swatch.addEventListener('mouseleave', () => { applySavedTheme(); updateThumbnail(); });
+  });
+
+  // Shortcuts toggle
+  const showShortcuts = document.getElementById('showShortcuts');
+  showShortcuts.addEventListener('change', () => {
+    document.querySelector('.shortcuts').style.display = showShortcuts.checked ? 'block' : 'none';
+  });
+
+  // Cards toggle
+  const showCards = document.getElementById('showCards');
+  const continueTabs = document.getElementById('continueTabs');
+  showCards.addEventListener('change', () => console.log("Cards visible:", showCards.checked));
+  continueTabs.addEventListener('change', () => console.log("Continue tabs:", continueTabs.checked));
+
+  // Reset / Restore / Discard / Apply / Save
+  document.getElementById('resetNexusBtn').addEventListener('click', resetNexus);
+  document.getElementById('restoreNexusBtn').addEventListener('click', restoreNexus);
+  document.getElementById('discardPreviewBtn').addEventListener('click', discardPreview);
+  document.getElementById('applyPreviewBtn').addEventListener('click', applyPreview);
+  document.getElementById('savePreviewBtn').addEventListener('click', savePreview);
+}
+
+// === Theme persistence ===
+function saveTheme(bg, text, card, accent) {
+  localStorage.setItem('nexus-theme', JSON.stringify({ bg, text, card, accent }));
+}
+function applySavedTheme() {
+  const saved = localStorage.getItem('nexus-theme');
+  if (saved) {
+    const { bg, text, card, accent } = JSON.parse(saved);
+    document.documentElement.style.setProperty('--bg', bg);
+    document.documentElement.style.setProperty('--text', text);
+    document.documentElement.style.setProperty('--card', card);
+    document.documentElement.style.setProperty('--accent', accent);
+  }
+}
+function previewTheme(value) {
+  if (value === 'light') {
+    document.documentElement.style.setProperty('--bg', '#fff');
+    document.documentElement.style.setProperty('--text', '#000');
+    document.documentElement.style.setProperty('--card', '#f5f5f5');
+  } else if (value === 'dark') {
+    document.documentElement.style.setProperty('--bg', '#000');
+    document.documentElement.style.setProperty('--text', '#fff');
+    document.documentElement.style.setProperty('--card', '#111');
+  } else if (value === 'device') {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.style.setProperty('--bg', '#000');
+      document.documentElement.style.setProperty('--text', '#fff');
+      document.documentElement.style.setProperty('--card', '#111');
+    } else {
+      document.documentElement.style.setProperty('--bg', '#fff');
+      document.documentElement.style.setProperty('--text', '#000');
+      document.documentElement.style.setProperty('--card', '#f5f5f5');
+    }
+  }
+  updateThumbnail();
+}
+
+// === Background persistence ===
+function applySavedBackground() {
+  const bg = localStorage.getItem('nexus-bg');
+  if (bg) {
+    document.body.style.backgroundImage = `url(${bg})`;
+  }
+}
+
+// === Thumbnail update ===
+function updateThumbnail() {
+  const thumb = document.getElementById('themeThumbnail');
+  if (!thumb) return;
+  thumb.style.background = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+  thumb.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text');
+  thumb.querySelector('.thumbnail-topbar').style.background =
+    getComputedStyle(document.documentElement).getPropertyValue('--card');
+  thumb.querySelector('.thumbnail-search').style.background =
+    getComputedStyle(document.documentElement).getPropertyValue('--card');
+  thumb.querySelector('.thumbnail-shortcuts').style.setProperty('--accent',
+    getComputedStyle(document.documentElement).getPropertyValue('--accent'));
+}
+
+// === Reset Nexus with backup ===
+function resetNexus() {
+  const confirmReset = confirm("Are you sure you want to reset Nexus to default settings?");
+  if (!confirmReset) return;
+
+  const backup = {
+    theme: localStorage.getItem('nexus-theme'),
+    shortcuts: localStorage.getItem('nexus-shortcuts'),
+    bg: localStorage.getItem('nexus-bg')
+  };
+  localStorage.setItem('nexus-backup', JSON.stringify(backup));
+
+  localStorage.removeItem('nexus-theme');
+  localStorage.removeItem('nexus-shortcuts');
+  localStorage.removeItem('nexus-bg');
+
+  document.documentElement.style.setProperty('--bg', '#000');
+  document.documentElement.style.setProperty('--text', '#fff');
+  document.documentElement.style.setProperty('--card', '#111');
+  document.documentElement.style.setProperty('--accent', '#ff0000');
+  document.body.style.backgroundImage = 'none';
+  document.getElementById('shortcutGrid').innerHTML = '';
+
+  alert("Nexus reset to default. You can restore last settings if needed.");
+  showScreen('home');
+}
+
+// === Restore Nexus from backup ===
+function restoreNexus() {
+  const backup = JSON.parse(localStorage.getItem('nexus-backup') || '{}');
+  if (!backup.theme && !backup.shortcuts && !backup.bg) {
+    alert("No backup found.");
+    return;
+  }
+
+  if (backup.theme) {
+    const { bg, text, card, accent } = JSON.parse(backup.theme);
+    document.documentElement.style.setProperty('--bg', bg);
+    document.documentElement.style.setProperty('--text', text);
+    document.documentElement.style.setProperty('--card', card);
+    document.documentElement.style.setProperty('--accent', accent);
+    localStorage.setItem('nexus-theme', backup.theme);
+  }
+  if (backup.shortcuts) {
+    localStorage.setItem('nexus-shortcuts', backup.shortcuts);
+    loadShortcuts();
+  }
+  if (backup.bg) {
+    localStorage.setItem('nexus-bg', backup.bg);
+    applySavedBackground();
+  }
+
+  alert("Last settings restored.");
+  showScreen('home');
+}
+
+// === Preview workflow ===
+let previewThemeState = null;
+
+function applyPreview() {
+  previewThemeState = {
+    bg: document.documentElement.style.getPropertyValue('--bg'),
+    text: document.documentElement.style.getPropertyValue('--text'),
+    card: document.documentElement.style.getPropertyValue('--card'),
+    accent: document.documentElement.style.getPropertyValue('--accent')
+  };
+  updateThumbnail();
+  alert("Preview applied temporarily. Use Save Settings to commit.");
+}
+
+function savePreview() {
+  if (!previewThemeState) {
+    alert("No preview applied yet.");
+    return;
+  }
+  saveTheme(previewThemeState.bg, previewThemeState.text, previewThemeState.card, previewThemeState.accent);
+  alert("Settings saved!");
+}
+
+function discardPreview() {
+  const saved = localStorage.getItem('nexus-theme');
+  if (!saved) {
+    alert("No saved settings found.");
+    return;
+  }
+  const { bg, text, card, accent } = JSON.parse(saved);
+  document.documentElement.style.setProperty('--bg', bg);
+  document.documentElement.style.setProperty('--text', text);
+  document.documentElement.style.setProperty('--card', card);
+  document.documentElement.style.setProperty('--accent', accent);
+
+  applySavedBackground();
+  loadShortcuts();
+  updateThumbnail();
+
+  alert("Preview discarded. Reverted to last saved settings.");
+}
+
+// === Shortcuts ===
+function loadShortcuts() {
+  const grid = document.getElementById('shortcutGrid');
+  grid.innerHTML = '';
+  const shortcuts = JSON.parse(localStorage.getItem('nexus-shortcuts') || '[]');
+  shortcuts.forEach(sc => {
+    const btn = document.createElement('button');
+    btn.className = 'ghost';
+    btn.textContent = sc.name;
+    btn.addEventListener('click', () => window.open(sc.url, '_blank'));
+    grid.appendChild(btn);
+  });
+}
+
+function addShortcutPrompt() {
+  const name = prompt("Shortcut name:");
+  const url = prompt("Shortcut URL:");
+  if (!name || !url) return;
+  const shortcuts = JSON.parse(localStorage.getItem('nexus-shortcuts') || '[]');
+  shortcuts.push({ name, url });
+  localStorage.setItem('nexus-shortcuts', JSON.stringify(shortcuts));
+  loadShortcuts();
+}
+
+// === AI Mode ===
+function setupAiMode() {
+  const input = document.getElementById('aiSearchInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      showScreen('ai-results');
+      fetchAiResults(input.value);
+    }
+  });
+}
+
+function setupAiResults() {
+  const input = document.getElementById('aiResultsInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      fetchAiResults(input.value);
+    }
+  });
+
+  const tabs = document.querySelectorAll('.ai-tabs .tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      fetchAiResults(document.getElementById('aiResultsInput').value, tab.dataset.tab);
+    });
+  });
+}
+
+function fetchAiResults(query, tab = 'all') {
+  const content = document.getElementById('aiResultsContent');
+  content.innerHTML = `<p>Showing ${tab} results for: <strong>${query}</strong></p>`;
+  // Placeholder: integrate backend API here
 }
