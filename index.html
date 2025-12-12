@@ -1,152 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexus</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noomuri Nexus</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Splash -->
+
+  <!-- Splash Screen -->
   <div id="splash" class="screen active">
-    <div class="spinner"></div>
-    <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
-    <h1 class="fade-text">Loading Nexus...</h1>
+    <div class="splash-logo">Nexus</div>
   </div>
 
-  <!-- Login -->
+  <!-- Login Screen -->
   <div id="login" class="screen">
-    <div class="login-card fade-in">
-      <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
-      <h2>Enter Password</h2>
-      <div class="password-row">
-        <input type="password" id="password" placeholder="Password" />
-        <button id="togglePassword" class="emoji-btn">👁️</button>
-      </div>
-      <button id="loginBtn">Enter</button>
+    <div class="login-card">
+      <h2>Welcome to Nexus</h2>
+      <input id="password" type="password" placeholder="Enter password">
+      <button id="togglePassword">👁️</button>
+      <button id="loginBtn">Login</button>
     </div>
   </div>
 
-  <!-- Loading -->
+  <!-- Loading Screen -->
   <div id="loading" class="screen">
     <div class="spinner"></div>
-    <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
-    <h2 class="fade-text">Loading Nexus...</h2>
+    <p>Loading Nexus...</p>
   </div>
 
-  <!-- Home -->
+  <!-- Home Screen -->
   <div id="home" class="screen">
-    <header class="topbar">
-      <div class="top-left">
-        <button class="ghost">Images</button>
-      </div>
-      <div class="top-center">
-        <input type="text" class="top-search" placeholder="Search Nexus or type in URL" />
-      </div>
-      <div class="top-right">
-        <button class="ghost">Profile</button>
-      </div>
-    </header>
-
-    <main class="home-main">
-      <h1 class="nexus-brand">
-        <span class="n1">N</span><span class="n2">E</span><span class="n3">X</span><span class="n4">U</span><span class="n5">S</span>
-      </h1>
-
-      <div class="search-row">
-        <div class="search-box">
-          <input type="text" id="searchInput" placeholder="Search the web with Nexus" />
-          <button class="mic-btn" id="micBtn" title="Voice search"></button>
-          <button class="ai-toggle" id="aiBtn" title="AI Mode">AI Mode</button>
-        </div>
-      </div>
-
-      <section class="shortcuts">
-        <div class="shortcut-grid" id="shortcutGrid"></div>
-        <button id="addShortcutBtn" class="ghost">Add shortcut</button>
-      </section>
-    </main>
-
-    <div class="customize-bottom">
-      <button id="customizeBtn" class="ghost">Customize Nexus</button>
+    <div class="home-topbar">
+      <button id="customizeBtn" class="ghost">⚙️ Customize Nexus</button>
+      <button id="aiBtn" class="ghost">🤖 AI Mode</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" placeholder="Search Nexus...">
+      <button id="micBtn">🎤</button>
+    </div>
+    <div class="shortcuts">
+      <h3>Shortcuts</h3>
+      <div id="shortcutGrid"></div>
+      <button id="addShortcutBtn" class="ghost">+ Add Shortcut</button>
     </div>
   </div>
 
   <!-- AI Mode Screen -->
   <div id="ai" class="screen">
-    <main class="ai-main">
-      <h1 class="ai-title">Meet AI Mode</h1>
-      <p class="ai-subtitle">Ask detailed questions for better responses</p>
+    <div class="ai-topbar">
+      <button id="backToHomeBtn" class="ghost">⬅️ Home</button>
+    </div>
+    <div class="search-bar">
+      <input id="aiSearchInput" type="text" placeholder="Ask Nexus AI...">
+      <button id="aiMicBtn">🎤</button>
+    </div>
+  </div>
 
-      <div class="ai-search-box">
-        <input type="text" id="aiSearchInput" placeholder="Ask anything" />
-        <button class="mic-btn" id="aiMicBtn" title="Voice input"></button>
-      </div>
-
-      <div class="ai-examples">
-        <p>Examples you can try:</p>
-        <ul>
-          <li>Quiz me on the periodic table of elements</li>
-          <li>Walk me through how to use the quadratic equation</li>
-          <li>Make a quiz about the different parts of a plant cell</li>
-        </ul>
-      </div>
-
-      <button id="backToHomeBtn" class="ghost">Back to Nexus</button>
-    </main>
+  <!-- AI Results Screen -->
+  <div id="ai-results" class="screen">
+    <div class="ai-topbar">
+      <button id="backToAiBtn" class="ghost">⬅️ AI Mode</button>
+      <button id="backToHomeBtn2" class="ghost">🏠 Home</button>
+    </div>
+    <div class="search-bar">
+      <input id="aiResultsInput" type="text" placeholder="Ask Nexus AI...">
+      <button id="aiResultsMicBtn">🎤</button>
+    </div>
+    <div class="ai-tabs">
+      <button class="tab active" data-tab="all">All</button>
+      <button class="tab" data-tab="images">Images</button>
+      <button class="tab" data-tab="videos">Videos</button>
+      <button class="tab" data-tab="news">News</button>
+      <button class="tab" data-tab="more">More</button>
+    </div>
+    <div id="aiResultsContent" class="results"></div>
   </div>
 
   <!-- Customize Nexus Modal -->
   <div id="customizeModal" class="modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h3>Customize Nexus</h3>
-        <button id="closeCustomize" class="ghost">Close</button>
-      </div>
+      <button id="closeCustomize" class="ghost">✖ Close</button>
+      <h2>Customize Nexus</h2>
+
+      <!-- Tabs -->
       <div class="modal-tabs">
-        <button class="tab active" data-tab="appearance">Appearance</button>
+        <button class="tab active" data-tab="theme">Theme</button>
         <button class="tab" data-tab="shortcuts">Shortcuts</button>
         <button class="tab" data-tab="cards">Cards</button>
       </div>
-      <div class="tab-panel active" id="tab-appearance">
-        <div class="theme-preview">Default Nexus Theme</div>
+
+      <!-- Theme Panel -->
+      <div id="tab-theme" class="tab-panel active">
+        <h3>Theme Options</h3>
         <div class="theme-options">
-          <label><input type="radio" name="theme" value="light" /> Light</label>
-          <label><input type="radio" name="theme" value="dark" checked /> Dark</label>
-          <label><input type="radio" name="theme" value="device" /> Device</label>
+          <label><input type="radio" name="theme" value="light"> Light</label>
+          <label><input type="radio" name="theme" value="dark"> Dark</label>
+          <label><input type="radio" name="theme" value="device"> Device</label>
         </div>
+
+        <h3>Accent Color</h3>
         <div class="accent-swatches">
-          <div class="swatch" style="background:#ff0000;" data-color="#ff0000"></div>
-          <div class="swatch" style="background:#00ffcc;" data-color="#00ffcc"></div>
-          <div class="swatch" style="background:#ff9900;" data-color="#ff9900"></div>
-          <div class="swatch" style="background:#3399ff;" data-color="#3399ff"></div>
+          <div class="swatch" data-color="#ff0000" style="background:#ff0000"></div>
+          <div class="swatch" data-color="#00ff00" style="background:#00ff00"></div>
+          <div class="swatch" data-color="#0000ff" style="background:#0000ff"></div>
+          <div class="swatch" data-color="#ff00ff" style="background:#ff00ff"></div>
+        </div>
+
+        <!-- Live Preview Thumbnail -->
+        <div class="theme-preview">
+          <div id="themeThumbnail" class="theme-thumbnail">
+            <div class="thumbnail-topbar"></div>
+            <div class="thumbnail-search"></div>
+            <div class="thumbnail-shortcuts"></div>
+          </div>
+        </div>
+
+        <!-- Preview Actions -->
+        <div class="preview-actions">
+          <button id="applyPreviewBtn" class="ghost">Apply Preview</button>
+          <button id="savePreviewBtn" class="ghost">Save Settings</button>
+          <button id="discardPreviewBtn" class="ghost">Discard Preview</button>
+          <button id="resetNexusBtn" class="ghost">Reset to Default</button>
+          <button id="restoreNexusBtn" class="ghost">Restore Last Settings</button>
         </div>
       </div>
-      <div class="tab-panel" id="tab-shortcuts">
-        <label>
-          <input type="checkbox" id="showShortcuts" checked />
-          Show shortcuts
-        </label>
-        <div>
-          <label><input type="radio" name="shortcutMode" value="my" checked /> My shortcuts</label>
-          <label><input type="radio" name="shortcutMode" value="visited" /> Most visited sites</label>
-        </div>
+
+      <!-- Shortcuts Panel -->
+      <div id="tab-shortcuts" class="tab-panel">
+        <h3>Shortcuts Settings</h3>
+        <label><input type="checkbox" id="showShortcuts" checked> Show Shortcuts</label>
       </div>
-      <div class="tab-panel" id="tab-cards">
-        <label>
-          <input type="checkbox" id="showCards" checked />
-          Show cards
-        </label>
-        <label>
-          <input type="checkbox" id="continueTabs" checked />
-          Continue with these tabs
-        </label>
+
+      <!-- Cards Panel -->
+      <div id="tab-cards" class="tab-panel">
+        <h3>Cards Settings</h3>
+        <label><input type="checkbox" id="showCards" checked> Show Cards</label>
+        <label><input type="checkbox" id="continueTabs" checked> Continue Tabs</label>
       </div>
     </div>
   </div>
 
-  <script src="app.js" defer></script>
+  <script src="app.js"></script>
 </body>
 </html>
