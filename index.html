@@ -29,7 +29,7 @@
     </div>
   </div>
 
-  <!-- Loading interstitial -->
+  <!-- Loading -->
   <div id="loading" class="screen">
     <div class="spinner"></div>
     <img src="icon-512.png" alt="Nexus Logo" class="logo bounce" />
@@ -38,10 +38,8 @@
 
   <!-- Home -->
   <div id="home" class="screen">
-    <!-- Topbar -->
     <header class="topbar">
       <div class="top-left">
-        <button class="ghost">Gmail</button>
         <button class="ghost">Images</button>
       </div>
       <div class="top-center">
@@ -57,7 +55,6 @@
         <span class="n1">N</span><span class="n2">E</span><span class="n3">X</span><span class="n4">U</span><span class="n5">S</span>
       </h1>
 
-      <!-- Main search bar -->
       <div class="search-row">
         <div class="search-box">
           <input type="text" id="searchInput" placeholder="Search the web with Nexus" />
@@ -66,14 +63,12 @@
         </div>
       </div>
 
-      <!-- Shortcuts -->
       <section class="shortcuts">
         <div class="shortcut-grid" id="shortcutGrid"></div>
         <button id="addShortcutBtn" class="ghost">Add shortcut</button>
       </section>
     </main>
 
-    <!-- Bottom-right Customize Nexus -->
     <div class="customize-bottom">
       <button id="customizeBtn" class="ghost">Customize Nexus</button>
     </div>
@@ -93,9 +88,9 @@
       <div class="ai-examples">
         <p>Examples you can try:</p>
         <ul>
+          <li>Quiz me on the periodic table of elements</li>
           <li>Walk me through how to use the quadratic equation</li>
-          <li>How does DNA replication work, step-by-step?</li>
-          <li>How does a fractional exponent relate to a square root?</li>
+          <li>Make a quiz about the different parts of a plant cell</li>
         </ul>
       </div>
 
@@ -103,7 +98,7 @@
     </main>
   </div>
 
-  <!-- Customize Nexus modal -->
+  <!-- Customize Nexus Modal -->
   <div id="customizeModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -111,31 +106,42 @@
         <button id="closeCustomize" class="ghost">Close</button>
       </div>
       <div class="modal-tabs">
-        <button class="tab active" data-tab="backgrounds">Background</button>
+        <button class="tab active" data-tab="appearance">Appearance</button>
         <button class="tab" data-tab="shortcuts">Shortcuts</button>
-        <button class="tab" data-tab="appearance">Appearance</button>
+        <button class="tab" data-tab="cards">Cards</button>
       </div>
-      <div class="tab-panel active" id="tab-backgrounds">
-        <div class="bg-grid">
-          <button class="bg-item" data-bg="black">Solid black (default)</button>
-          <button class="bg-item" data-bg="assets/backgrounds/red-gradient.jpg">Red gradient</button>
-          <button class="bg-item" data-bg="assets/backgrounds/dark-texture.jpg">Dark texture</button>
-          <button class="bg-item" data-bg="custom">Upload image…</button>
+      <div class="tab-panel active" id="tab-appearance">
+        <div class="theme-preview">Default Nexus Theme</div>
+        <div class="theme-options">
+          <label><input type="radio" name="theme" value="light" /> Light</label>
+          <label><input type="radio" name="theme" value="dark" checked /> Dark</label>
+          <label><input type="radio" name="theme" value="device" /> Device</label>
         </div>
-        <input type="file" id="bgUpload" accept="image/*" style="display:none;" />
-        <button id="resetBg" class="ghost">Reset background</button>
+        <div class="accent-swatches">
+          <div class="swatch" style="background:#ff0000;" data-color="#ff0000"></div>
+          <div class="swatch" style="background:#00ffcc;" data-color="#00ffcc"></div>
+          <div class="swatch" style="background:#ff9900;" data-color="#ff9900"></div>
+          <div class="swatch" style="background:#3399ff;" data-color="#3399ff"></div>
+        </div>
       </div>
       <div class="tab-panel" id="tab-shortcuts">
-        <p>Manage your shortcuts. Right‑click to remove.</p>
-      </div>
-      <div class="tab-panel" id="tab-appearance">
-        <label class="row">
-          <span>Accent color</span>
-          <input type="color" id="accentPicker" value="#ff0000" />
+        <label>
+          <input type="checkbox" id="showShortcuts" checked />
+          Show shortcuts
         </label>
-        <label class="row">
-          <span>Show AI mode toggle</span>
-          <input type="checkbox" id="aiToggle" checked />
+        <div>
+          <label><input type="radio" name="shortcutMode" value="my" checked /> My shortcuts</label>
+          <label><input type="radio" name="shortcutMode" value="visited" /> Most visited sites</label>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-cards">
+        <label>
+          <input type="checkbox" id="showCards" checked />
+          Show cards
+        </label>
+        <label>
+          <input type="checkbox" id="continueTabs" checked />
+          Continue with these tabs
         </label>
       </div>
     </div>
