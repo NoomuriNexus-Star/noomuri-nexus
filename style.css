@@ -1,238 +1,179 @@
-// Screen switching with fades
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  el.classList.add('active');
-  if (id === 'login' || id === 'home') el.classList.add('fade-in');
+:root {
+  --bg: #000;
+  --text: #fff;
+  --muted: #ccc;
+  --card: #111;
+  --accent: #ff0000;
 }
 
-window.addEventListener('load', () => {
-  // Splash -> login (with fade-out)
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    splash.classList.add('fade-out');
-    setTimeout(() => showScreen('login'), 800);
-  }, 2200);
-
-  // Login events
-  document.getElementById('loginBtn').addEventListener('click', startApp);
-  document.getElementById('username').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') startApp();
-  });
-
-  // Search events
-  document.getElementById('searchBtn').addEventListener('click', runSearch);
-  document.getElementById('feelingLuckyBtn').addEventListener('click', feelingLucky);
-  document.getElementById('searchInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') runSearch();
-  });
-
-  // Customize modal + settings
-  setupCustomizeModal();
-
-  // Shortcuts
-  loadShortcuts();
-  document.getElementById('addShortcutBtn').addEventListener('click', addShortcutPrompt);
-
-  // Lens + mic + AI
-  document.getElementById('lensBtn').addEventListener('click', openLensOverlay);
-  document.getElementById('micBtn').addEventListener('click', startVoiceSearch);
-  document.getElementById('aiBtn').addEventListener('click', toggleAIMode);
-
-  // Service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
-});
-
-function startApp() {
-  const name = document.getElementById('username').value.trim();
-  if (!name) return;
-  localStorage.setItem('nexusUser', name);
-
-  // Login -> Loading Nexus interstitial
-  showScreen('loading');
-  setTimeout(() => {
-    // Loading -> Home with fade in
-    showScreen('home');
-    // Apply stored background + accent
-    applySavedBackground();
-    const savedAccent = localStorage.getItem('nexusAccent');
-    if (savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
-    document.querySelector('.nexus-brand').classList.add('fade-in');
-  }, 1400);
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, Arial, sans-serif;
 }
 
-// Search using your proxy endpoint
-async function runSearch() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
+/* Screens */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: grid; place-items: center; }
 
-  const resultsEl = document.getElementById('results');
-  resultsEl.innerHTML = '<div class="spinner" style="margin: 0 auto;"></div>';
+/* Spinner */
+.spinner {
+  width: 64px; height: 64px;
+  border: 6px solid var(--accent);
+  border-top: 6px solid #111;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-    const data = await res.json();
-
-    resultsEl.innerHTML = '';
-    data.results.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'result-card fade-in';
-      card.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a><p>${item.snippet}</p>`;
-      resultsEl.appendChild(card);
-    });
-  } catch (err) {
-    resultsEl.innerHTML = `<p style="color:#f88;">Failed to fetch results.</p>`;
-  }
+/* Logo bounce */
+.logo {
+  width: 180px;
+  animation: bounce 3s ease-in-out infinite;
+  margin-top: 8px;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-function feelingLucky() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return runSearch();
-  window.open(`/api/search?lucky=1&q=${encodeURIComponent(q)}`, '_blank');
+/* Fades */
+.fade-text { animation: fadeIn 1.2s ease forwards; }
+.fade-in { animation: fadeIn 0.8s ease forwards; }
+.fade-out { animation: fadeOut 0.8s ease forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* Login card */
+.login-card {
+  background: var(--card);
+  padding: 24px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  display: grid; gap: 12px;
+  width: min(420px, 90vw);
+}
+.login-card input {
+  padding: 12px; border-radius: 8px; border: 1px solid #333;
+  background: #0a0a0a; color: var(--text);
+}
+.login-card button {
+  padding: 12px 16px; border-radius: 8px; border: none;
+  background: var(--accent); color: #000; font-weight: 700; cursor: pointer;
+}
+.login-card button:hover { filter: brightness(1.1); }
+
+/* Topbar */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  padding: 12px 16px;
+}
+.ghost {
+  background: transparent; color: var(--text);
+  border: 1px solid #333; border-radius: 20px; padding: 8px 12px; cursor: pointer;
+}
+.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Home main */
+.home-main {
+  display: grid; place-items: center;
+  width: 100%; height: 100vh;
+  padding-top: 40px;
 }
 
-// Voice search across languages
-function startVoiceSearch() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return alert('Voice search not supported in this browser.');
-  const rec = new SpeechRecognition();
-  rec.lang = localStorage.getItem('nexusLang') || 'en-US'; // user-settable later
-  rec.interimResults = false;
-  rec.maxAlternatives = 1;
-  rec.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
-    document.getElementById('searchInput').value = transcript;
-    runSearch();
-  };
-  rec.onerror = () => alert('Voice recognition error.');
-  rec.start();
+/* NEXUS brand letters */
+.nexus-brand {
+  font-size: clamp(48px, 9vw, 92px);
+  font-weight: 800;
+  margin: 0 0 24px;
 }
+.n1 { color: #ff2b2b; }
+.n2 { color: #ff1a1a; }
+.n3 { color: #ff0f0f; }
+.n4 { color: #e60606; }
+.n5 { color: #c40000; }
 
-// AI Mode placeholder
-let aiMode = false;
-function toggleAIMode() {
-  aiMode = !aiMode;
-  document.getElementById('aiBtn').textContent = aiMode ? 'AI ON' : 'AI';
-  // In AI mode, you might route to a different endpoint or change rendering.
+/* Search row */
+.search-row { display: grid; gap: 16px; width: min(720px, 90vw); }
+.search-box {
+  background: #0a0a0a; border: 1px solid #222; border-radius: 999px;
+  display: grid; grid-template-columns: 44px 1fr 44px 48px; align-items: center;
+  padding: 8px 10px;
 }
-
-// Customize modal logic
-function setupCustomizeModal() {
-  const modal = document.getElementById('customizeModal');
-  const btn = document.getElementById('customizeBtn');
-  const closeBtn = document.getElementById('closeCustomize');
-  const tabs = document.querySelectorAll('.tab');
-  const panels = document.querySelectorAll('.tab-panel');
-  const bgButtons = document.querySelectorAll('.bg-item');
-  const upload = document.getElementById('bgUpload');
-  const resetBg = document.getElementById('resetBg');
-  const accentPicker = document.getElementById('accentPicker');
-  const aiToggle = document.getElementById('aiToggle');
-
-  btn.addEventListener('click', () => modal.classList.add('show'));
-  closeBtn.addEventListener('click', () => modal.classList.remove('show'));
-
-  tabs.forEach(t => t.addEventListener('click', () => {
-    tabs.forEach(x => x.classList.remove('active'));
-    panels.forEach(p => p.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
-  }));
-
-  bgButtons.forEach(b => b.addEventListener('click', () => {
-    if (b.dataset.bg === 'custom') upload.click();
-    else setBackground(b.dataset.bg);
-  }));
-  upload.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setBackground(reader.result);
-    reader.readAsDataURL(file);
-  });
-  resetBg.addEventListener('click', () => setBackground('black'));
-
-  accentPicker.addEventListener('input', (e) => {
-    document.documentElement.style.setProperty('--accent', e.target.value);
-    localStorage.setItem('nexusAccent', e.target.value);
-  });
-
-  aiToggle.addEventListener('change', (e) => {
-    document.getElementById('aiBtn').style.display = e.target.checked ? 'inline-block' : 'none';
-    localStorage.setItem('nexusAIModeToggle', e.target.checked ? '1' : '0');
-  });
-
-  // Restore settings
-  const savedAccent = localStorage.getItem('nexusAccent');
-  if (savedAccent) {
-    accentPicker.value = savedAccent;
-    document.documentElement.style.setProperty('--accent', savedAccent);
-  }
-  const savedToggle = localStorage.getItem('nexusAIModeToggle');
-  if (savedToggle !== null) {
-    const show = savedToggle === '1';
-    aiToggle.checked = show;
-    document.getElementById('aiBtn').style.display = show ? 'inline-block' : 'none';
-  }
+.search-box input {
+  background: transparent; border: none; color: var(--text);
+  font-size: 16px; outline: none;
 }
-
-function setBackground(value) {
-  if (value === 'black') {
-    document.documentElement.style.setProperty('--bg', '#000');
-    document.body.style.backgroundImage = '';
-  } else if (value.startsWith('assets/') || value.startsWith('data:image')) {
-    document.body.style.backgroundImage = `url("${value}")`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-  } else {
-    document.documentElement.style.setProperty('--bg', value);
-    document.body.style.backgroundImage = '';
-  }
-  localStorage.setItem('nexusBg', value);
+.search-actions { display: flex; gap: 10px; justify-content: center; }
+.search-actions button {
+  background: #1a1a1a; border: 1px solid #333; color: var(--text);
+  border-radius: 6px; padding: 10px 14px; cursor: pointer;
 }
+.search-actions button:hover { border-color: var(--accent); color: var(--accent); }
 
-function applySavedBackground() {
-  const saved = localStorage.getItem('nexusBg') || 'black';
-  setBackground(saved);
+/* Lens + mic + AI buttons */
+.lens-btn, .mic-btn, .ai-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
+  background: transparent; position: relative;
 }
+.lens-btn::before {
+  content: ""; position: absolute; inset: 6px; border: 2px solid var(--accent); border-radius: 6px;
+}
+.lens-btn:hover::after {
+  content: "Nexus Lens"; position: absolute; top: 36px; left: -10px;
+  background: #111; color: var(--text); padding: 6px 8px; border: 1px solid #333; border-radius: 6px;
+  white-space: nowrap; font-size: 12px;
+}
+.mic-btn::before {
+  content: ""; position: absolute; inset: 8px; border-radius: 50%;
+  border: 2px solid var(--accent);
+}
+.ai-btn { color: var(--text); border: 1px solid #333; border-radius: 16px; }
+.ai-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-// Shortcuts
-function loadShortcuts() {
-  const grid = document.getElementById('shortcutGrid');
-  const data = JSON.parse(localStorage.getItem('nexusShortcuts') || '[]');
-  grid.innerHTML = '';
-  data.forEach((s, i) => {
-    const el = document.createElement('div');
-    el.className = 'shortcut';
-    el.innerHTML = `<strong>${s.name}</strong><br><span>${s.url}</span>`;
-    el.onclick = () => window.open(s.url, '_blank');
-    el.oncontextmenu = (e) => {
-      e.preventDefault();
-      const confirmRemove = confirm(`Remove shortcut "${s.name}"?`);
-      if (confirmRemove) {
-        data.splice(i, 1);
-        localStorage.setItem('nexusShortcuts', JSON.stringify(data));
-        loadShortcuts();
-      }
-    };
-    grid.appendChild(el);
-  });
+/* Shortcuts */
+.shortcuts { margin-top: 24px; width: min(720px, 90vw); }
+.shortcut-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
 }
+.shortcut {
+  background: #0f0f0f; border: 1px solid #222; border-radius: 10px;
+  padding: 12px; text-align: center; color: var(--text); cursor: pointer;
+}
+.shortcut:hover { border-color: var(--accent); }
 
-function addShortcutPrompt() {
-  const name = prompt('Shortcut name');
-  if (!name) return;
-  const url = prompt('Shortcut URL (include https://)');
-  if (!url) return;
-  const data = JSON.parse(localStorage.getItem('nexusShortcuts') || '[]');
-  data.push({ name, url });
-  localStorage.setItem('nexusShortcuts', JSON.stringify(data));
-  loadShortcuts();
+/* Results */
+.results {
+  width: min(840px, 90vw);
+  margin-top: 28px; display: grid; gap: 12px;
 }
+.result-card {
+  background: var(--card); border: 1px solid var(--accent);
+  padding: 10px; border-radius: 8px;
+}
+.result-card a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.result-card p { color: var(--muted); }
 
-// Lens overlay (placeholder interaction)
-function openLensOverlay() {
-  alert('Nexus Lens: Coming soon. Upload an image or paste a URL to analyze.');
+/* Modal */
+.modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,0.6); }
+.modal.show { display: grid; }
+.modal-content {
+  width: min(720px, 95vw); background: #0b0b0b; border: 1px solid #222; border-radius: 12px;
+  padding: 16px; color: var(--text);
 }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.modal-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.tab { background: #121212; border: 1px solid #333; color: var(--text); border-radius: 16px; padding: 8px 12px; cursor: pointer; }
+.tab.active { border-color: var(--accent); color: var(--accent); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.bg-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
+.bg-item { background: #151515; border: 1px solid #333; border-radius: 8px; padding: 12px; cursor: pointer; color: var(--text); }
+.bg-item:hover { border-color: var(--accent); }
+.row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
