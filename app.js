@@ -1,70 +1,35 @@
-// Register service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-// Grab elements
-const loginButton = document.getElementById("loginButton");
-const togglePassword = document.getElementById("togglePassword");
-const passwordInput = document.getElementById("passwordInput");
-const loginScreen = document.getElementById("loginScreen");
-const errorMessage = document.getElementById("errorMessage");
+window.onload = () => {
+  setTimeout(() => showScreen('login'), 1500);
+};
 
-// Create spinner
-const spinner = document.createElement("div");
-spinner.classList.add("spinner");
-spinner.style.display = "none";
-document.body.appendChild(spinner);
-
-// Handle login
-loginButton.addEventListener("click", () => {
-  const enteredPassword = passwordInput.value;
-  if (enteredPassword === "$N00MURI_DA_G0AT") {
-    errorMessage.textContent = "";
-    loginScreen.classList.add("fade-out");
-
-    // Show spinner after fade
-    setTimeout(() => {
-      spinner.style.display = "block";
-      spinner.classList.add("spin", "fade-in");
-    }, 800);
-
-    // Fade out spinner before redirect
-    setTimeout(() => {
-      spinner.classList.remove("fade-in");
-      spinner.classList.add("fade-out-spinner");
-    }, 1600);
-
-    // Redirect after spinner fade-out
-    setTimeout(() => {
-      window.location.href =
-        "https://accounts.google.com/Logout?continue=https://www.google.com";
-    }, 2200);
-  } else {
-    passwordInput.classList.add("shake");
-    errorMessage.textContent = "Incorrect password. Try again.";
-    setTimeout(() => {
-      passwordInput.classList.remove("shake");
-    }, 400);
+function startApp() {
+  const name = document.getElementById('username').value.trim();
+  if (name) {
+    localStorage.setItem('nexusUser', name);
+    document.getElementById('userDisplay').textContent = name;
+    showScreen('home');
   }
-});
+}
 
-// Toggle show/hide password
-togglePassword.addEventListener("click", () => {
-  if (passwordInput.type === "password") {
-    passwordInput.type = "text";
-    togglePassword.textContent = "🙈";
-  } else {
-    passwordInput.type = "password";
-    togglePassword.textContent = "👁️";
-  }
-});
+async function runSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
 
-// Enter key submits
-passwordInput.addEventListener("keypress", (event) => {
-  if (event.key === "Enter") {
-    loginButton.click();
-  }
-});
+  const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+  const data = await response.json();
 
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML = '';
 
+  data.results.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'result';
+    div.innerHTML = `<a href="${item.link}" target="_blank">${item.title}</a><p>${item.snippet}</p>`;
+    resultsDiv.appendChild(div);
+  });
+}
