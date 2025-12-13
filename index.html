@@ -1,131 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus Browser</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noomuri Nexus</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ffcc;
+      margin-bottom: 10px;
+    }
+    #results {
+      margin-top: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tabs button {
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .tabs button:hover {
+      background: #222;
+    }
+
+    /* Spinner overlay with animated gradient */
+    #spinner {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #001f1f, #000);
+      background-size: 400% 400%;
+      animation: gradientShift 6s ease infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    }
+    #spinner.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loader {
+      border: 6px solid #333;
+      border-top: 6px solid #00ffcc;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite, glowPulse 2s ease-in-out infinite;
+      box-shadow: 0 0 15px #00ffcc;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 5px #00ffcc; }
+      50% { box-shadow: 0 0 25px #00ffcc; }
+      100% { box-shadow: 0 0 5px #00ffcc; }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Layer badge */
+    #layerBadge {
+      position: fixed;
+      bottom: 10px; right: 10px;
+      padding: 6px 12px;
+      font-weight: bold;
+      border-radius: 6px;
+      font-family: system-ui, sans-serif;
+      z-index: 1000;
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+      0% { box-shadow: 0 0 5px currentColor; }
+      50% { box-shadow: 0 0 20px currentColor; }
+      100% { box-shadow: 0 0 5px currentColor; }
+    }
+  </style>
 </head>
 <body>
+  <h1>Noomuri Nexus</h1>
+  <input id="searchBox" type="text" placeholder="Search..." style="width:60%; padding:8px;" />
+  <button onclick="runSearch()">Search</button>
 
-  <!-- Splash Screen -->
-  <div id="splash" class="screen active">
-    <div class="splash-logo">Loading Nexus</div>
-    <div class="spinner"></div>
+  <div class="tabs">
+    <button onclick="switchTab('all')">All</button>
+    <button onclick="switchTab('images')">Images</button>
+    <button onclick="switchTab('videos')">Videos</button>
+    <button onclick="switchTab('news')">News</button>
+    <button onclick="switchTab('more')">More</button>
   </div>
 
-  <!-- Login Screen -->
-  <div id="login" class="screen">
-    <div class="login-card">
-      <h2>Login to Nexus</h2>
-      <input id="password" type="password" placeholder="Enter password">
-      <button id="togglePassword" class="ghost">👁️</button>
-      <button id="loginBtn" class="ghost">Login</button>
-    </div>
-  </div>
+  <div id="results">Enter a query above.</div>
 
-  <!-- Loading Screen -->
-  <div id="loading" class="screen">
-    <div class="spinner"></div>
-    <h2>Loading Nexus...</h2>
-  </div>
+  <!-- Spinner overlay -->
+  <div id="spinner"><div class="loader"></div></div>
 
-  <!-- Home Screen -->
-  <div id="home" class="screen">
-    <div class="home-topbar">
-      <button id="customizeBtn" class="ghost">Customize Nexus</button>
-      <button id="aiBtn" class="ghost">AI Mode</button>
-    </div>
+  <!-- Layer badge -->
+  <div id="layerBadge">Detecting…</div>
 
-    <h1>NEXUS</h1>
-    <div class="search-bar">
-      <input type="text" placeholder="Search the web with Nexus">
-      <button id="micBtn" class="ghost">🎤</button>
-    </div>
+  <script>
+    const WORKER_URL = "https://noomuri-nexus.susbobby1.workers.dev";
+    const FALLBACK_URL = "https://susbobby1.github.io/noomuri-nexus/search.html";
+    let currentTab = "all";
 
-    <div class="shortcuts">
-      <h3>Shortcuts</h3>
-      <div id="shortcutGrid"></div>
-      <button id="addShortcutBtn" class="ghost">+ Add Shortcut</button>
-    </div>
-  </div>
+    function switchTab(tab) {
+      currentTab = tab;
+      const query = document.getElementById("searchBox").value;
+      runSearch(query, tab);
+    }
 
-  <!-- AI Mode Screen -->
-  <div id="ai" class="screen">
-    <div class="ai-header">
-      <h1>Meet AI Mode</h1>
-      <p>Ask detailed questions for better responses.</p>
-    </div>
+    async function runSearch(query, tab = currentTab) {
+      if (!query) {
+        document.getElementById("results").innerHTML = "<p>Please enter a search query.</p>";
+        return;
+      }
 
-    <div class="search-bar">
-      <input id="aiSearchInput" type="text" placeholder="Ask anything">
-      <button id="aiMicBtn" class="ghost">🎤</button>
-    </div>
+      showSpinner(true);
+      document.getElementById("results").style.opacity = 0;
 
-    <div class="example-prompts">
-      <p>• Compare the journeys of two literary heroes to build an essay</p>
-      <p>• Explain the relationship between a circle's radius and its area</p>
-      <p>• Quiz me on the stages of mitosis, in order</p>
-    </div>
+      try {
+        const endpoint = `${WORKER_URL}/search?q=${encodeURIComponent(query)}&tab=${tab}&mode=json`;
+        const res = await fetch(endpoint);
 
-    <button id="backToHomeBtn" class="ghost">⬅️ Home</button>
-  </div>
+        if (!res.ok) throw new Error(`Worker error: ${res.status}`);
 
-  <!-- Results Screen -->
-  <div id="results" class="screen">
-    <div class="results-topbar">
-      <button id="resultsHomeBtn" class="ghost">⬅️ Home</button>
-      <input id="resultsInput" type="text" placeholder="Search Nexus...">
-      <button id="resultsMicBtn" class="ghost">🎤</button>
-    </div>
+        const data = await res.json();
+        document.getElementById("results").innerHTML = data.html;
 
-    <div class="ai-tabs">
-      <button class="tab active" data-tab="all">All</button>
-      <button class="tab" data-tab="images">Images</button>
-      <button class="tab" data-tab="videos">Videos</button>
-      <button class="tab" data-tab="news">News</button>
-      <button class="tab" data-tab="more">More</button>
-    </div>
+        setTimeout(() => {
+          document.getElementById("results").style.opacity = 1;
+        }, 100);
+      } catch (err) {
+        console.warn("Worker failed, falling back:", err.message);
+        document.getElementById("results").innerHTML = `
+          <iframe src="${FALLBACK_URL}?q=${encodeURIComponent(query)}&tab=${tab}" 
+                  style="width:100%; height:80vh; border:none;"></iframe>
+        `;
+        setTimeout(() => {
+          document.getElementById("results").style.opacity = 1;
+        }, 100);
+      } finally {
+        showSpinner(false);
+      }
+    }
 
-    <iframe id="resultsFrame" class="results-frame" title="Nexus Results"></iframe>
-  </div>
+    function showSpinner(active) {
+      const spinner = document.getElementById("spinner");
+      spinner.classList.toggle("active", active);
+    }
 
-  <!-- Customize Nexus Modal -->
-  <div id="customizeModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Customize Nexus</h2>
-        <button id="closeCustomize" class="ghost">✖</button>
-      </div>
-      <div class="modal-body">
-        <p>Choose your theme and accent color:</p>
-        <div class="theme-options">
-          <label><input type="radio" name="theme" value="light"> Light</label>
-          <label><input type="radio" name="theme" value="dark"> Dark</label>
-          <label><input type="radio" name="theme" value="device"> Device</label>
-        </div>
-        <div class="accent-swatches">
-          <div class="swatch" data-color="#ff0000" style="background:#ff0000"></div>
-          <div class="swatch" data-color="#00ff00" style="background:#00ff00"></div>
-          <div class="swatch" data-color="#0000ff" style="background:#0000ff"></div>
-          <div class="swatch" data-color="#ff00ff" style="background:#ff00ff"></div>
-        </div>
-        <div class="preview-actions">
-          <button id="applyPreviewBtn" class="ghost">Apply Preview</button>
-          <button id="savePreviewBtn" class="ghost">Save Settings</button>
-          <button id="discardPreviewBtn" class="ghost">Discard Preview</button>
-          <button id="resetNexusBtn" class="ghost">Reset Nexus</button>
-          <button id="restoreNexusBtn" class="ghost">Restore Last</button>
-        </div>
-        <div id="themeThumbnail" class="theme-thumbnail">
-          <div class="thumbnail-topbar"></div>
-          <div class="thumbnail-search"></div>
-          <div class="thumbnail-shortcuts"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+    async function detectLayer() {
+      try {
+        const res = await fetch(`${WORKER_URL}/version.json`);
+        const data = await res.json();
+        setLayerBadge(data.layer);
+      } catch {
+        setLayerBadge("fallback");
+      }
+    }
 
-  <script src="app.js"></script>
+    function setLayerBadge(layer) {
+      const badge = document.getElementById("layerBadge");
+      if (layer === "worker") {
+        badge.textContent = "Live";
+        badge.style.background = "#00ffcc";
+        badge.style.color = "#000";
+      } else {
+        badge.textContent = "Fallback";
+        badge.style.background = "#ff0066";
+        badge.style.color = "#fff";
+      }
+    }
+
+    detectLayer();
+  </script>
 </body>
 </html>
